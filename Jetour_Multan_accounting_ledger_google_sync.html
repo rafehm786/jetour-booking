@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jetour Multan — Booking System</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --ink:#0D1B2A;--ink2:#2C3E50;--ink3:#546E7A;
+  --bg:#F0F2F5;--surface:#FFFFFF;--surface2:#F8FAFC;
+  --t1:#7B2FBE;--t1l:#F3E8FF;--t1m:#C084FC;
+  --t2:#0369A1;--t2l:#E0F2FE;--t2m:#38BDF8;
+  --gold:#D97706;--goldl:#FEF3C7;
+  --grn:#059669;--grnl:#D1FAE5;
+  --red:#DC2626;--redl:#FEE2E2;
+  --accent:#F59E0B;
+  --r:12px;--r2:8px;
+  --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 16px rgba(0,0,0,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:13px;line-height:1.5}
+/* LAYOUT */
+.shell{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--ink);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto}
+.sidebar-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sidebar-logo h1{font-size:14px;font-weight:800;letter-spacing:.5px;color:#fff}
+.sidebar-logo p{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px}
+.nav-section{padding:12px 10px 6px;font-size:9px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:1.2px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;margin:1px 8px;cursor:pointer;font-size:12px;font-weight:500;color:rgba(255,255,255,.65);transition:all .15s}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.12);color:#fff;font-weight:700}
+.nav-item .ico{font-size:14px;width:20px;text-align:center}
+.nav-divider{height:1px;background:rgba(255,255,255,.07);margin:8px 16px}
+.main{margin-left:220px;flex:1;padding:24px;max-width:1200px}
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.page-title{font-size:22px;font-weight:800;color:var(--ink)}
+.page-title span{color:var(--t2)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.date-chip{background:var(--surface);border:1px solid #E2E8F0;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;color:var(--ink3);font-family:IBM Plex Mono,monospace}
+/* KPI CARDS */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--surface);border-radius:var(--r);padding:16px;border:1px solid #E8ECF0;box-shadow:var(--sh);position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:0 0 0 60px;opacity:.08}
+.kpi.t1::before{background:var(--t1)}
+.kpi.t2::before{background:var(--t2)}
+.kpi.grn::before{background:var(--grn)}
+.kpi.gold::before{background:var(--gold)}
+.kpi.red::before{background:var(--red)}
+.kpi-icon{font-size:18px;margin-bottom:8px}
+.kpi-lbl{font-size:10px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.kpi-val{font-size:26px;font-weight:800;line-height:1}
+.kpi.t1 .kpi-val{color:var(--t1)}
+.kpi.t2 .kpi-val{color:var(--t2)}
+.kpi.grn .kpi-val{color:var(--grn)}
+.kpi.gold .kpi-val{color:var(--gold)}
+.kpi.red .kpi-val{color:var(--red)}
+.kpi-sub{font-size:10px;color:var(--ink3);margin-top:4px}
+/* CHARTS GRID */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.chart-grid.thirds{grid-template-columns:1fr 1fr 1fr}
+.chart-box{background:var(--surface);border-radius:var(--r);padding:16px;border:1px solid #E8ECF0;box-shadow:var(--sh)}
+.chart-box.wide{grid-column:1/-1}
+.chart-box.span2{grid-column:span 2}
+.chart-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.chart-sub{font-size:11px;color:var(--ink3);margin-bottom:12px}
+.chart-wrap{position:relative;height:220px}
+.chart-wrap.tall{height:280px}
+.chart-wrap.sm{height:160px}
+/* TABLE */
+.tbl-box{background:var(--surface);border-radius:var(--r);border:1px solid #E8ECF0;box-shadow:var(--sh);margin-bottom:20px;overflow:hidden}
+.tbl-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;border-bottom:1px solid #F1F5F9}
+.tbl-head h3{font-size:13px;font-weight:700;color:var(--ink)}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--surface2);padding:9px 12px;font-weight:700;font-size:10.5px;color:var(--ink3);text-align:left;white-space:nowrap;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid #E8ECF0}
+td{padding:8px 12px;border-bottom:1px solid #F8FAFC;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFBFC}
+tfoot tr:hover td{background:var(--ink)!important;color:#fff!important}
+.booking-grid{table-layout:fixed;min-width:3090px}
+.booking-grid input,.booking-grid select{width:100%;min-width:0!important;max-width:100%}
+.booking-grid td,.booking-grid th{white-space:nowrap;vertical-align:middle}
+.booking-grid .num-cell{text-align:right;font-variant-numeric:tabular-nums}
+.booking-grid .status-cell{text-align:center}
+.booking-grid tfoot td{background:var(--ink)!important;color:#fff!important}
+.booking-grid tfoot td:hover{background:var(--ink)!important;color:#fff!important}
+td.center,th.center{text-align:center}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
+.b-t1{background:var(--t1l);color:var(--t1)}
+.b-t2{background:var(--t2l);color:var(--t2)}
+.b-pending{background:#FFF7ED;color:#C2410C}
+.b-token{background:var(--grnl);color:var(--grn)}
+.b-complete{background:#EFF6FF;color:#1D4ED8}
+.b-today{background:var(--goldl);color:var(--gold)}
+/* PROGRESS */
+.prog-bg{background:#E2E8F0;border-radius:99px;height:6px;overflow:hidden}
+.prog-fill{height:6px;border-radius:99px;transition:width .4s ease}
+.prog-t1{background:var(--t1)}
+.prog-t2{background:var(--t2)}
+.prog-grn{background:var(--grn)}
+/* INPUTS & CONTROLS */
+input,select{border:1px solid #E2E8F0;border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;background:var(--surface);color:var(--ink);outline:none;transition:border .15s}
+input:focus,select:focus{border-color:var(--t2);box-shadow:0 0 0 3px rgba(3,105,161,.08)}
+.btn{padding:7px 14px;border-radius:8px;border:1.5px solid #E2E8F0;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;background:var(--surface);color:var(--ink);transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--surface2);border-color:#CBD5E1}
+.btn-primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn-primary:hover{background:var(--ink2)}
+.btn-t1{background:var(--t1);color:#fff;border-color:var(--t1)}
+.btn-t2{background:var(--t2);color:#fff;border-color:var(--t2)}
+.btn-grn{background:var(--grn);color:#fff;border-color:var(--grn)}
+.btn-gold{background:var(--gold);color:#fff;border-color:var(--gold)}
+.btn-sm{padding:4px 10px;font-size:11px;border-radius:6px}
+.btn-xs{padding:3px 8px;font-size:10px;border-radius:5px}
+/* PERSON CARD */
+.person-card{background:var(--surface);border:1.5px solid #E8ECF0;border-radius:var(--r);padding:16px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.person-card:hover{border-color:var(--t2m);box-shadow:var(--sh2);transform:translateY(-1px)}
+.person-card.selected{border-color:var(--t2);box-shadow:0 0 0 3px rgba(3,105,161,.12)}
+.person-card .avatar{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;margin-bottom:10px}
+.person-card h4{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:6px;line-height:1.3}
+.person-mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:8px}
+.pms{background:var(--surface2);border-radius:6px;padding:5px 8px}
+.pms .pl{font-size:9px;color:var(--ink3);font-weight:600;text-transform:uppercase}
+.pms .pv{font-size:13px;font-weight:800}
+/* QR */
+.qr-img{width:56px;height:56px;border-radius:6px;border:1px solid #E2E8F0;display:block}
+.qr-ph{width:56px;height:56px;background:var(--surface2);border:1.5px dashed #CBD5E1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--ink3);text-align:center;line-height:1.3;padding:4px}
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(13,27,42,.6);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border-radius:16px;padding:24px;width:400px;max-width:95vw;box-shadow:0 24px 64px rgba(0,0,0,.2)}
+.modal h3{font-size:16px;font-weight:800;color:var(--ink);margin-bottom:18px}
+.fr{margin-bottom:12px}
+.fr label{display:block;font-size:10px;font-weight:700;color:var(--ink3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.fr input,.fr select{width:100%}
+.hint{font-size:11px;color:var(--ink3);line-height:1.5}
+.sync-strip{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:linear-gradient(135deg,#fff 0%,#f8fafc 100%);border:1px solid #E2E8F0;border-radius:14px;padding:14px 16px;margin-bottom:16px;box-shadow:var(--sh)}
+.sync-copy{display:flex;flex-direction:column;gap:3px}
+.sync-copy strong{font-size:13px;color:var(--ink)}
+.sync-copy span{font-size:11px;color:var(--ink3)}
+.sync-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sync-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid #E2E8F0;background:#fff}
+.sync-badge.ok{color:var(--grn);background:var(--grnl);border-color:#A7F3D0}
+.sync-badge.warn{color:var(--gold);background:var(--goldl);border-color:#FCD34D}
+.sync-badge.err{color:var(--red);background:var(--redl);border-color:#FCA5A5}
+/* DETAIL PANEL */
+.detail-panel{background:var(--surface);border-radius:var(--r);border:1.5px solid var(--t2);padding:20px;margin-bottom:16px;box-shadow:var(--sh2)}
+.dp-header{display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #F1F5F9}
+.dp-avatar{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;flex-shrink:0}
+.dp-name{font-size:17px;font-weight:800;color:var(--ink)}
+.dp-prefix{font-size:11px;color:var(--ink3);font-family:IBM Plex Mono,monospace;margin-top:2px}
+.dp-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:14px}
+.dp-kpi{background:var(--surface2);border-radius:8px;padding:10px 12px;text-align:center}
+.dp-kpi .dk-lbl{font-size:9px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.dp-kpi .dk-val{font-size:18px;font-weight:800}
+/* SECTION FILTERS */
+.filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.filter-pill{padding:5px 12px;border-radius:20px;border:1.5px solid #E2E8F0;cursor:pointer;font-size:11px;font-weight:600;background:var(--surface);color:var(--ink3);transition:all .15s}
+.filter-pill.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.filter-pill.fp-t1.active{background:var(--t1);border-color:var(--t1)}
+.filter-pill.fp-t2.active{background:var(--t2);border-color:var(--t2)}
+/* DAY SECTION */
+.day-block{background:var(--surface);border-radius:var(--r);border:1px solid #E8ECF0;margin-bottom:12px;overflow:hidden;box-shadow:var(--sh)}
+.day-header{padding:12px 16px;background:var(--surface2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-bottom:1px solid #E8ECF0;cursor:pointer}
+.day-header h4{font-size:13px;font-weight:700;color:var(--ink)}
+.day-stats{display:flex;align-items:center;gap:8px}
+.day-body{padding:0}
+/* PRINT */
+@media print{body>*{display:none!important}#print-area{display:block!important;position:fixed;inset:0;background:#fff}@page{size:A4;margin:8mm}}
+#print-area{display:none}
+@media (max-width:900px){.sync-strip{align-items:flex-start}}
+.receipt{background:#fff;padding:22px 26px;max-width:180mm;margin:0 auto;font-family:'Plus Jakarta Sans',sans-serif}
+.rh{text-align:center;padding-bottom:14px;margin-bottom:14px;border-bottom:3px solid #0D1B2A}
+.rh h2{font-size:24px;font-weight:900;color:#0D1B2A;letter-spacing:.5px}
+.rh .rsub{font-size:11px;color:#666;margin-top:3px}
+.rh .rtag{display:inline-block;padding:4px 16px;border-radius:20px;color:#fff;font-size:11px;font-weight:700;margin-top:8px}
+.rh .rmeta{display:flex;justify-content:space-between;font-size:9px;color:#999;margin-top:10px}
+.rinfo{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#e5e7eb;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:14px}
+.ri{background:#fff;padding:9px 13px}
+.ri.full{grid-column:1/-1}
+.ri .rl{font-size:9px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.ri .rv{font-size:13px;font-weight:700;color:#111}
+.ri .rv.big{font-size:20px;color:#0D1B2A}
+.rpay{background:#0D1B2A;border-radius:10px;padding:14px 18px;margin-bottom:14px;color:#fff}
+.rpay-row{display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center}
+.rpay-item .rpl{font-size:9px;opacity:.65;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.rpay-item .rpv{font-size:18px;font-weight:900}
+.rrem{display:flex;justify-content:space-between;align-items:center;border:2px solid #DC2626;border-radius:10px;padding:12px 16px;margin-bottom:14px}
+.rqr{display:flex;gap:16px;align-items:center;padding-top:12px;border-top:1px solid #e5e7eb}
+.rqr img{width:95px;height:95px;border-radius:8px;border:1px solid #e5e7eb}
+.rfoot{text-align:center;margin-top:12px;padding-top:12px;border-top:2px solid #0D1B2A;font-size:9px;color:#9CA3AF}
+.rstamp{display:inline-block;border:2px solid #059669;color:#059669;padding:3px 14px;border-radius:6px;font-weight:800;font-size:11px;letter-spacing:1px;margin-top:6px}
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.kpi{animation:fadeUp .3s ease both}
+.kpi:nth-child(1){animation-delay:.05s}.kpi:nth-child(2){animation-delay:.1s}.kpi:nth-child(3){animation-delay:.15s}.kpi:nth-child(4){animation-delay:.2s}.kpi:nth-child(5){animation-delay:.25s}.kpi:nth-child(6){animation-delay:.3s}
+.scrollbar-thin::-webkit-scrollbar{width:4px;height:4px}
+.scrollbar-thin::-webkit-scrollbar-track{background:transparent}
+.scrollbar-thin::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:4px}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h1>🚗 JETOUR</h1>
+    <p>Multan T2 &amp; T1</p>
+  </div>
+  <div class="nav-section">Main</div>
+  <div class="nav-item active" onclick="goTo('dashboard')" id="nav-dashboard"><span class="ico">📊</span> Dashboard</div>
+  <div class="nav-item" onclick="goTo('daywise')" id="nav-daywise"><span class="ico">📅</span> Day Wise</div>
+  <div class="nav-item" onclick="goTo('monthly')" id="nav-monthly"><span class="ico">📆</span> Monthly</div>
+  <div class="nav-item" onclick="goTo('targets')" id="nav-targets"><span class="ico">🎯</span> Targets</div>
+  <div class="nav-item" onclick="goTo('ledger')" id="nav-ledger"><span class="ico">📒</span> Ledger</div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">Salesmen</div>
+  <div id="nav-salesmen"></div>
+  <div class="nav-divider"></div>
+  <div class="nav-item" onclick="openModal('modal-add')" style="color:#A5D6A7"><span class="ico">➕</span> Add Salesman</div>
+</aside>
+
+<!-- MAIN -->
+<main class="main" id="main-content"></main>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-bg" id="modal-add">
+<div class="modal">
+  <h3>➕ Naya Salesman Add Karo</h3>
+  <div class="fr"><label>Full Name</label><input id="mp-name" type="text" placeholder="MR.AHMED ALI"></div>
+  <div class="fr"><label>Prefix (2-3 letters)</label><input id="mp-pfx" type="text" placeholder="AA" maxlength="4"></div>
+  <div class="fr"><label>Booking Codes</label><input id="mp-codes" type="number" value="22" min="5" max="100"></div>
+  <div style="display:flex;gap:8px;margin-top:6px">
+    <button class="btn btn-primary" onclick="confirmAdd()">✅ Create Sheet</button>
+    <button class="btn" onclick="closeModal('modal-add')">Cancel</button>
+  </div>
+</div>
+</div>
+
+<div class="modal-bg" id="modal-cloud">
+<div class="modal">
+  <h3>Cloud Sync Settings</h3>
+  <div class="fr"><label>Google Apps Script Web App URL</label><input id="cloud-url" type="text" placeholder="https://script.google.com/macros/s/.../exec"></div>
+  <div class="fr"><label>Shared Secret</label><input id="cloud-secret" type="text" placeholder="jetour-multan-2026"></div>
+  <div class="hint">Google Apps Script web app ko public execute mode me deploy karein. Secret frontend aur backend dono me same hona chahiye.</div>
+  <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+    <button class="btn btn-primary" onclick="saveCloudConfig()">Save Settings</button>
+    <button class="btn btn-t2" onclick="testCloudConnection()">Test Connection</button>
+    <button class="btn" onclick="closeModal('modal-cloud')">Close</button>
+  </div>
+</div>
+</div>
+
+
+<!-- ADD CAR MODAL -->
+
+<div id="print-area"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+var DEFAULT_CARS = [
+  {id:'JETOUR_T1_PHEV',name:'JETOUR T1 PHEV',category:'T1',price:0,bookingAmount:0},
+  {id:'JETOUR_T1_PETROL',name:'JETOUR T1 PETROL',category:'T1',price:0,bookingAmount:0},
+  {id:'JETOUR_T2_PHEV',name:'JETOUR T2 PHEV',category:'T2',price:0,bookingAmount:0},
+  {id:'JETOUR_T2_PETROL',name:'JETOUR T2 PETROL',category:'T2',price:0,bookingAmount:0}
+];
+var DEFAULT_BANKS = ['Allied Bank','Askari Bank','Bank Alfalah','Bank Al Habib','BankIslami','Dubai Islamic Bank','Faysal Bank','Habib Bank Limited (HBL)','Habib Metropolitan Bank','JS Bank','MCB Bank','Meezan Bank','National Bank of Pakistan (NBP)','Samba Bank','Silkbank','Soneri Bank','Standard Chartered','Summit Bank','The Bank of Khyber','The Bank of Punjab (BOP)','United Bank Limited (UBL)'];
+var DEFAULT_CITIES = ["Abbottabad", "Ahmedpur East", "Ali Pur", "Arifwala", "Attock", "Awaran", "Badin", "Bagh", "Bahawalnagar", "Bahawalpur", "Bannu", "Barkhan", "Batagram", "Bhakkar", "Bhalwal", "Bhimber", "Buner", "Chakwal", "Charsadda", "Chiniot", "Chishtian", "Dadu", "Daska", "Dera Allah Yar", "Dera Ghazi Khan", "Dera Ismail Khan", "Faisalabad", "Gakhar Mandi", "Ghotki", "Gilgit", "Gojra", "Gujar Khan", "Gujranwala", "Gujrat", "Gwadar", "Hafizabad", "Hangu", "Haripur", "Harnai", "Haroonabad", "Hasan Abdal", "Hattian Bala", "Hub", "Hunza", "Hyderabad", "Islamabad", "Jacobabad", "Jampur", "Jamshoro", "Jaranwala", "Jauharabad", "Jhang", "Jhelum", "Kalat", "Kamalia", "Kamoke", "Kandhkot", "Karachi", "Karak", "Kasur", "Khairpur", "Khanewal", "Khanpur", "Khaplu", "Khushab", "Khuzdar", "Kohat", "Kot Addu", "Kotli", "Lahore", "Lakki Marwat", "Lalamusa", "Larkana", "Lasbela", "Layyah", "Lodhran", "Loralai", "Mandi Bahauddin", "Mansehra", "Mardan", "Mastung", "Matiari", "Mianwali", "Mingora", "Mirpur", "Mirpur Khas", "Multan", "Murree", "Muzaffarabad", "Muzaffargarh", "Nankana Sahib", "Narowal", "Nasirabad", "Naushahro Feroze", "Nawabshah", "Nowshera", "Okara", "Pakpattan", "Panjgur", "Peshawar", "Pishin", "Qila Abdullah", "Qila Saifullah", "Quetta", "Rahim Yar Khan", "Rajanpur", "Rawalakot", "Rawalpindi", "Sadiqabad", "Sahiwal", "Sambrial", "Sanghar", "Sargodha", "Shahdadkot", "Sheikhupura", "Shikarpur", "Sialkot", "Skardu", "Sohawa", "Sukkur", "Swabi", "Swat", "Tando Adam", "Tando Allahyar", "Tando Muhammad Khan", "Tank", "Taxila", "Thatta", "Timergara", "Toba Tek Singh", "Turbat", "Umerkot", "Upper Dir", "Vehari", "Wah Cantonment", "Wazirabad", "Zhob"];
+var DEFAULT_SALESMEN = [
+  {name:"MR.BASAM TARIQ",prefix:"BT",color:"#7B2FBE"},
+  {name:"MR.M.ZOHAIB",prefix:"MZ",color:"#0369A1"},
+  {name:"MR.FARHAN JABBAR",prefix:"FJ",color:"#059669"},
+  {name:"MR.SHAHZAIB GUL",prefix:"SG",color:"#D97706"},
+  {name:"MISS.IQRA AMEEN",prefix:"IQ",color:"#DC2626"},
+  {name:"MISS.RIFFAT",prefix:"RF",color:"#0891B2"},
+  {name:"MR.M.UMAIR",prefix:"MU",color:"#7C3AED"},
+  {name:"MR.ZUBAIR (FINANCE)",prefix:"ZF",color:"#B45309"}
+];
+var CLOUD_DEFAULTS = { url:'https://script.google.com/macros/s/AKfycbxt-khtMBn3rbaSwP5QbRorvDysHkSsYyKrrjl6wBz2c6lSrpNhX7ghF4wgKTw7ymYc/exec', secret:'jetour-multan-booking-9X4K7M2Q-sync', autoSync:true };
+var cloudState = { status:'warn', text:'Cloud setup required', lastSyncedAt:'', busy:false, timer:null, hydrated:false };
+var S = {
+  targetT1:15, targetT2:15,
+  salesmen: JSON.parse(JSON.stringify(DEFAULT_SALESMEN)),
+  cars: DEFAULT_CARS.slice(),
+  banks: DEFAULT_BANKS.slice(),
+  cities: DEFAULT_CITIES.slice(),
+  bookings:{},
+  dailyLog:[]
+};
+var curPage='dashboard', curSm=null, curFilter='ALL';
+var curDayFrom='', curDayTo='', curMonthFilter='';
+var curDaySm='ALL', curMonthSm='ALL', curLedgerSm='ALL';
+var charts={};
+
+function today(){return new Date().toISOString().slice(0,10);}
+function N(v){return (parseFloat(v)||0).toLocaleString();}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+function blankBooking(prefix,num){
+  return {code:prefix+'-'+num,name:'',cell:'',city:'',caseDate:'',confirmedDate:'',token:'',balance:'',refund:'',refundDate:'',refundReason:'',refundChequeNo:'',model:'',carId:'',vehiclePrice:'',bookingAmount:'',chequeNo:'',paymentCase:'Walk-in Customer',bankName:'',logDate:''};
+}
+function ensureMasterData(){
+  if(!Array.isArray(S.cars)) S.cars=[];
+  DEFAULT_CARS.forEach(function(dc){
+    var ex=S.cars.find(function(c){return c.id===dc.id;});
+    if(ex){
+      ex.name=dc.name; ex.category=dc.category;
+      if(ex.price===undefined||ex.price===null||ex.price==='') ex.price=0;
+      if(ex.bookingAmount===undefined||ex.bookingAmount===null||ex.bookingAmount==='') ex.bookingAmount=0;
+    }else{
+      S.cars.push({id:dc.id,name:dc.name,category:dc.category,price:0,bookingAmount:0});
+    }
+  });
+  if(!Array.isArray(S.banks) || !S.banks.length) S.banks=DEFAULT_BANKS.slice(); else S.banks=DEFAULT_BANKS.slice();
+  if(!Array.isArray(S.cities) || !S.cities.length) S.cities=DEFAULT_CITIES.slice(); else S.cities=DEFAULT_CITIES.slice();
+}
+function ensureCoreState(){
+  if(!S || typeof S!=='object') S={};
+  if(!Array.isArray(S.salesmen) || !S.salesmen.length) S.salesmen=JSON.parse(JSON.stringify(DEFAULT_SALESMEN));
+  if(!S.bookings || typeof S.bookings!=='object') S.bookings={};
+  if(!Array.isArray(S.dailyLog)) S.dailyLog=[];
+  if(S.targetT1===undefined || S.targetT1===null || S.targetT1==='') S.targetT1=15;
+  if(S.targetT2===undefined || S.targetT2===null || S.targetT2==='') S.targetT2=15;
+}
+function initB(){
+  ensureCoreState();
+  ensureSalesmanTargets();
+  ensureMasterData();
+  S.salesmen.forEach(function(sm){
+    if(!S.bookings[sm.prefix]){
+      S.bookings[sm.prefix]=[];
+      for(var i=0;i<22;i++) S.bookings[sm.prefix].push(blankBooking(sm.prefix,101+i));
+    }else{
+      S.bookings[sm.prefix].forEach(function(b,idx){
+        if(!b.code) b.code=sm.prefix+'-'+(101+idx);
+        if(b.carId && !b.model){
+          var car=getCar(b.carId);
+          b.model=car?car.category:'';
+        }
+        if(!('paymentCase' in b)) b.paymentCase='Walk-in Customer';
+        if(!('bankName' in b)) b.bankName='';
+        if(!('chequeNo' in b)) b.chequeNo='';
+        if(!('vehiclePrice' in b)) b.vehiclePrice='';
+        if(!('bookingAmount' in b)) b.bookingAmount='';
+        if(!('refund' in b)) b.refund='';
+        if(!('refundDate' in b)) b.refundDate='';
+        if(!('refundReason' in b)) b.refundReason='';
+        if(!('refundChequeNo' in b)) b.refundChequeNo='';
+        if(!('caseDate' in b)) b.caseDate=b.date||'';
+        if(!('confirmedDate' in b)) b.confirmedDate=((b.date && ((parseFloat(b.token)||0)+(parseFloat(b.balance)||0)- (parseFloat(b.refund)||0) >= parseFloat(b.vehiclePrice||0)))?b.date:'');
+        if(b.paymentCase==='Walk-in Customer') b.bankName='';
+        if('date' in b) delete b.date;
+      });
+    }
+  });
+}
+
+
+function reportSalesmanOptionsHtml(selected){
+  return '<option value="ALL"'+(selected==='ALL'?' selected':'')+'>All Salesmen</option>' + S.salesmen.map(function(sm){
+    return '<option value="'+sm.prefix+'"'+(selected===sm.prefix?' selected':'')+'>'+sm.name+'</option>';
+  }).join('');
+}
+function buildLogFromBooking(sm,b){
+  return {date:(b.logDate||today()),prefix:sm.prefix,smName:sm.name,code:b.code,custName:b.name||'',carId:b.carId||'',carName:carNameFromBooking(b)||'',category:carCategoryFromBooking(b)||'',token:b.token||0,balance:b.balance||0,refund:b.refund||0,totalPaid:totalPaid(b)||0,netCollected:netCollected(b)||0,remaining:activeRemainingAmount(b)||0,status:accountingStatus(b),paymentCase:paymentModeLabel(b),bankName:bankLabel(b),chequeNo:b.chequeNo||'',refundChequeNo:b.refundChequeNo||'',confirmedDate:b.confirmedDate||''};
+}
+function rebuildDailyLog(){
+  var fresh=[];
+  S.salesmen.forEach(function(sm){
+    smBks(sm.prefix).forEach(function(b){
+      if(!b) return;
+      if(!b.logDate && (b.name||b.carId||bookingReceived(b)||balanceReceived(b)||refundedAmount(b)||b.caseDate||b.confirmedDate)) b.logDate=today();
+      if(!b.logDate) return;
+      if(!(b.name||b.carId||bookingReceived(b)||balanceReceived(b)||refundedAmount(b)||b.caseDate||b.confirmedDate)) return;
+      fresh.push(buildLogFromBooking(sm,b));
+    });
+  });
+  S.dailyLog=fresh;
+}
+function getCloudConfig(){
+  try{
+    var raw=localStorage.getItem('jt_cloud_config');
+    var parsed=raw?JSON.parse(raw):{};
+    return {url:String(parsed.url||CLOUD_DEFAULTS.url||'').trim(),secret:String(parsed.secret||CLOUD_DEFAULTS.secret||'').trim(),autoSync:parsed.autoSync!==false};
+  }catch(e){
+    return {url:'',secret:'',autoSync:true};
+  }
+}
+function setCloudStatus(status,text){
+  cloudState.status=status;
+  cloudState.text=text;
+}
+function syncEnabled(){
+  var cfg=getCloudConfig();
+  return !!(cfg.url && cfg.secret);
+}
+function saveLocalOnly(){try{rebuildDailyLog();localStorage.setItem('jt_final',JSON.stringify(S));}catch(e){}}
+function touchSavedStatus(){
+  cloudState.lastSyncedAt = cloudState.lastSyncedAt || new Date().toISOString();
+  if(syncEnabled()){
+    setCloudStatus('warn','Local save ho gaya, cloud sync pending...');
+  }else{
+    setCloudStatus('ok','Local save ho gaya');
+  }
+  renderSyncStripStatus();
+}
+function normalizeStatePayload(payload){
+  if(!payload || typeof payload!=='object') return null;
+  var state=payload.state||payload.data||payload;
+  if(!state || typeof state!=='object') return null;
+  return JSON.parse(JSON.stringify(state));
+}
+function cloudLoadUrl(){
+  var cfg=getCloudConfig();
+  if(!cfg.url) return '';
+  return cfg.url;
+}
+function jsonpLoad(url, secret){
+  return new Promise(function(resolve, reject){
+    var cb='jtCloudLoad_' + Date.now() + '_' + Math.floor(Math.random()*100000);
+    var sep=url.indexOf('?')===-1?'?':'&';
+    var script=document.createElement('script');
+    var done=false;
+    window[cb]=function(payload){
+      done=true;
+      try{ delete window[cb]; }catch(e){ window[cb]=undefined; }
+      if(script.parentNode) script.parentNode.removeChild(script);
+      resolve(payload);
+    };
+    script.onerror=function(){
+      try{ delete window[cb]; }catch(e){ window[cb]=undefined; }
+      if(script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error('Cloud script load failed'));
+    };
+    script.src=url + sep + 'action=load&secret=' + encodeURIComponent(secret) + '&callback=' + encodeURIComponent(cb) + '&_ts=' + Date.now();
+    document.head.appendChild(script);
+    setTimeout(function(){
+      if(done) return;
+      try{ delete window[cb]; }catch(e){ window[cb]=undefined; }
+      if(script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error('Cloud load timeout'));
+    }, 12000);
+  });
+}
+function postStateThroughForm(payload){
+  return new Promise(function(resolve, reject){
+    try{
+      var url=getCloudConfig().url;
+      var iframe=document.createElement('iframe');
+      var target='jtCloudTarget_' + Date.now() + '_' + Math.floor(Math.random()*100000);
+      iframe.name=target;
+      iframe.style.display='none';
+      document.body.appendChild(iframe);
+
+      var form=document.createElement('form');
+      form.method='POST';
+      form.action=url;
+      form.target=target;
+      form.style.display='none';
+
+      function addField(name, value){
+        var input=document.createElement('input');
+        input.type='hidden';
+        input.name=name;
+        input.value=value;
+        form.appendChild(input);
+      }
+
+      addField('secret', payload.secret);
+      addField('updatedAt', payload.updatedAt);
+      addField('state', JSON.stringify(payload.state));
+      document.body.appendChild(form);
+
+      iframe.onload=function(){
+        setTimeout(function(){
+          if(form.parentNode) form.parentNode.removeChild(form);
+          if(iframe.parentNode) iframe.parentNode.removeChild(iframe);
+          resolve({ok:true});
+        }, 150);
+      };
+
+      form.submit();
+      setTimeout(function(){
+        if(form.parentNode) form.parentNode.removeChild(form);
+        if(iframe.parentNode) iframe.parentNode.removeChild(iframe);
+        resolve({ok:true});
+      }, 2500);
+    }catch(err){
+      reject(err);
+    }
+  });
+}
+async function loadCloudState(){
+  if(!syncEnabled()) return false;
+  try{
+    cloudState.busy=true;
+    setCloudStatus('warn','Cloud se data load ho raha hai...');
+    var cfg=getCloudConfig();
+    var data=await jsonpLoad(cloudLoadUrl(), cfg.secret);
+    if(!data || data.ok===false) throw new Error((data&&data.error)||'Cloud load failed');
+    var remoteState=normalizeStatePayload(data);
+    if(remoteState){
+      S=remoteState;
+      ensureSalesmanTargets();
+      ensureMasterData();
+      initB();
+      rebuildDailyLog();
+      saveLocalOnly();
+      cloudState.lastSyncedAt=data.updatedAt||new Date().toISOString();
+      cloudState.hydrated=true;
+      setCloudStatus('ok','Cloud data loaded');
+      return true;
+    }
+    setCloudStatus('warn','Cloud empty hai, local data active');
+    return false;
+  }catch(e){
+    setCloudStatus('err','Cloud load fail, local data active');
+    return false;
+  }finally{
+    cloudState.busy=false;
+  }
+}
+async function syncStateToCloud(reason){
+  if(!syncEnabled()) return false;
+  try{
+    cloudState.busy=true;
+    setCloudStatus('warn', reason==='manual' ? 'Manual sync chal rahi hai...' : 'Cloud sync chal rahi hai...');
+    rebuildDailyLog();
+    var payload={secret:getCloudConfig().secret,state:S,updatedAt:new Date().toISOString()};
+    await postStateThroughForm(payload);
+    cloudState.lastSyncedAt=payload.updatedAt;
+    cloudState.hydrated=true;
+    setCloudStatus('ok','Cloud sync successful');
+    renderSyncStripStatus();
+    return true;
+  }catch(e){
+    setCloudStatus('err','Cloud sync fail hui');
+    renderSyncStripStatus();
+    return false;
+  }finally{
+    cloudState.busy=false;
+  }
+}
+function flushSyncBeacon(){
+  if(!syncEnabled()) return false;
+  try{
+    rebuildDailyLog();
+    var payload={secret:getCloudConfig().secret,state:S,updatedAt:new Date().toISOString()};
+    var body=JSON.stringify(payload);
+    if(navigator && typeof navigator.sendBeacon==='function'){
+      var blob=new Blob([body], {type:'text/plain;charset=utf-8'});
+      return navigator.sendBeacon(getCloudConfig().url, blob);
+    }
+  }catch(e){}
+  return false;
+}
+function queueCloudSync(reason){
+  if(!syncEnabled()) return;
+  if(cloudState.timer) clearTimeout(cloudState.timer);
+  cloudState.timer=setTimeout(function(){syncStateToCloud(reason||'auto');},250);
+  renderSyncStripStatus();
+}
+function renderSyncStrip(){
+  var cfg=getCloudConfig();
+  var last=cloudState.lastSyncedAt ? new Date(cloudState.lastSyncedAt).toLocaleString('en-PK') : 'Not synced yet';
+  var badgeClass=cloudState.status==='ok'?'ok':(cloudState.status==='err'?'err':'warn');
+  var detail=cfg.url ? 'Shared cloud active | Last sync: '+last : 'Abhi local mode hai. Google Sheets connect karne ke baad sab same data use karenge.';
+  return '<div class="sync-strip"><div class="sync-copy"><strong>Shared Booking Mode</strong><span>'+esc(detail)+'</span></div><div class="sync-actions"><span class="sync-badge '+badgeClass+'" id="sync-badge">'+esc(cloudState.text)+'</span><button class="btn btn-sm" onclick="openCloudSettings()">Cloud Settings</button><button class="btn btn-sm btn-t2" onclick="manualReloadCloud()">Reload Cloud</button><button class="btn btn-sm btn-grn" onclick="manualSyncNow()">Sync Now</button></div></div>';
+}
+function renderSyncStripStatus(){
+  var badge=document.getElementById('sync-badge');
+  if(!badge) return;
+  badge.className='sync-badge ' + (cloudState.status==='ok'?'ok':(cloudState.status==='err'?'err':'warn'));
+  badge.textContent=cloudState.text;
+}
+// ═══════════════════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════════════════
+function save(){
+  saveLocalOnly();
+  touchSavedStatus();
+  queueCloudSync('auto');
+}
+async function loadS(){
+  try{var r=localStorage.getItem('jt_final');if(r)Object.assign(S,JSON.parse(r));}catch(e){}
+  ensureCoreState();
+  ensureSalesmanTargets();
+  ensureMasterData();
+  initB();
+  rebuildDailyLog();
+  if(syncEnabled()) await loadCloudState();
+  ensureCoreState();
+  buildSideNav();
+  goTo('salesman', (S.salesmen[0]&&S.salesmen[0].prefix) || null);
+}
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════
+function goTo(page, smPrefix){
+  curPage=page; curSm=smPrefix||null; curFilter='ALL';
+  document.querySelectorAll('.nav-item').forEach(function(el){el.classList.remove('active');});
+  var n=document.getElementById('nav-'+page);
+  if(n) n.classList.add('active');
+  if(smPrefix){
+    var el=document.getElementById('nav-sm-'+smPrefix);
+    if(el) el.classList.add('active');
+  }
+  render();
+}
+function buildSideNav(){
+  var el=document.getElementById('nav-salesmen');
+  el.innerHTML=S.salesmen.map(function(sm){
+    return '<div class="nav-item" id="nav-sm-'+sm.prefix+'" onclick="goTo(\'salesman\',\''+sm.prefix+'\')">'
+      +'<span class="ico" style="color:'+sm.color+'">●</span> '+sm.name.replace('MR.','').replace('MISS.','').split(' ')[0]+'</div>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER ROUTER
+// ═══════════════════════════════════════════════════════════
+function render(){
+  try{
+    ensureCoreState();
+    destroyCharts();
+    var m=document.getElementById('main-content');
+    if(curPage==='dashboard') m.innerHTML=renderSyncStrip()+pageDashboard();
+    else if(curPage==='daywise') m.innerHTML=renderSyncStrip()+pageDayWise();
+    else if(curPage==='monthly') m.innerHTML=renderSyncStrip()+pageMonthly();
+    else if(curPage==='targets') m.innerHTML=renderSyncStrip()+pageTargets();
+    else if(curPage==='ledger') m.innerHTML=renderSyncStrip()+pageLedger();
+    else if(curPage==='salesman') m.innerHTML=renderSyncStrip()+pageSalesman();
+    setTimeout(buildCharts,50);
+  }catch(err){
+    var m2=document.getElementById('main-content');
+    if(m2){
+      m2.innerHTML='<div class="sync-strip"><div class="sync-copy"><strong>Page Error</strong><span>App render me masla aaya, fallback view show ho raha hai.</span></div><div class="sync-actions"><span class="sync-badge err">'+esc(err && err.message ? err.message : 'Unknown error')+'</span></div></div>'
+      +'<div class="chart-box" style="padding:24px"><div class="chart-title">App reset suggested</div><div class="chart-sub">Agar blank screen phir aaye to local browser storage clear karke file dubara open karein.</div><button class="btn btn-primary" onclick="resetAppData()">Reset Local Data</button></div>';
+    }
+  }
+}
+function renderKeepScroll(){
+  var sx = window.scrollX || window.pageXOffset || 0;
+  var sy = window.scrollY || window.pageYOffset || 0;
+  var wraps = Array.prototype.slice.call(document.querySelectorAll('.tbl-wrap')).map(function(el, idx){
+    return {
+      idx: idx,
+      scrollLeft: el.scrollLeft || 0,
+      scrollTop: el.scrollTop || 0
+    };
+  });
+  render();
+  setTimeout(function(){
+    window.scrollTo(sx, sy);
+    var nextWraps = document.querySelectorAll('.tbl-wrap');
+    wraps.forEach(function(w){
+      var el = nextWraps[w.idx];
+      if(!el) return;
+      el.scrollLeft = w.scrollLeft;
+      el.scrollTop = w.scrollTop;
+    });
+  }, 120);
+}
+function destroyCharts(){Object.values(charts).forEach(function(c){try{c.destroy();}catch(e){}});charts={};}
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+function allBks(){return Object.values(S.bookings).flat();}
+function smBks(prefix){return S.bookings[prefix]||[];}
+function getTarget(sm,model){
+  var key=model==='T1'?'targetT1':'targetT2';
+  var legacy=model==='T1'?S.targetT1:S.targetT2;
+  return parseInt(sm&&sm[key])||parseInt(legacy)||15;
+}
+function ensureSalesmanTargets(){
+  S.salesmen.forEach(function(sm){
+    if(!sm.targetT1) sm.targetT1=parseInt(S.targetT1)||15;
+    if(!sm.targetT2) sm.targetT2=parseInt(S.targetT2)||15;
+  });
+}
+function smStats(sm){
+  var bks=smBks(sm.prefix);
+  var tok=bks.reduce(function(s,b){return s+bookingReceived(b);},0);
+  var bal=bks.reduce(function(s,b){return s+balanceReceived(b);},0);
+  var refund=bks.reduce(function(s,b){return s+refundedAmount(b);},0);
+  var net=bks.reduce(function(s,b){return s+netCollected(b);},0);
+  var outstanding=bks.reduce(function(s,b){return s+activeRemainingAmount(b);},0);
+  var aT1=bks.filter(function(b){return carCategoryFromBooking(b)==='T1'&&(b.name||b.token);}).length;
+  var aT2=bks.filter(function(b){return carCategoryFromBooking(b)==='T2'&&(b.name||b.token);}).length;
+  var cancelled=bks.filter(function(b){return accountingStatus(b)==='CANCELLED / REFUNDED';}).length;
+  var todayCount=S.dailyLog.filter(function(l){return l.date===today()&&l.prefix===sm.prefix;}).length;
+  return {tok:tok,bal:bal,refund:refund,total:tok+bal,net:net,outstanding:outstanding,aT1:aT1,aT2:aT2,total_bk:aT1+aT2,cancelled:cancelled,todayCount:todayCount,
+    remT1:Math.max(0,getTarget(sm,'T1')-aT1),remT2:Math.max(0,getTarget(sm,'T2')-aT2)};
+}
+function initials(name){return name.replace('MR.','').replace('MISS.','').split(' ').slice(0,2).map(function(w){return w[0];}).join('');}
+function getCar(id){return (S.cars||[]).find(function(c){return c.id===id;})||null;}
+function carsByCategory(cat){return (S.cars||[]).filter(function(c){return c.category===cat;});}
+function carCategoryFromBooking(b){ if(!b) return ''; var car=getCar(b.carId||b.model); return car?car.category:(b.model||''); }
+function carNameFromBooking(b){ if(!b) return ''; var car=getCar(b.carId||b.model); return car?car.name:(b.model||''); }
+function getCarPrice(b){ var car=getCar(b&& (b.carId||b.model)); if(car) return parseFloat(car.price)||0; return parseFloat(b&&b.vehiclePrice)||0; }
+function getBookingAmount(b){ var car=getCar(b&& (b.carId||b.model)); if(car) return parseFloat(car.bookingAmount)||0; return parseFloat(b&&b.bookingAmount)||0; }
+function bookingReceived(b){ return parseFloat(b&&b.token)||0; }
+function balanceReceived(b){ return parseFloat(b&&b.balance)||0; }
+function refundedAmount(b){ return parseFloat(b&&b.refund)||0; }
+function additionalReceived(b){ return balanceReceived(b); }
+function totalPaid(b){ return bookingReceived(b) + balanceReceived(b); }
+function netCollected(b){ return Math.max(0,totalPaid(b) - refundedAmount(b)); }
+function isCancelledBooking(b){ return refundedAmount(b)>0 && netCollected(b)<=0; }
+function remainingAmount(b){
+  if(isCancelledBooking(b)) return 0;
+  return Math.max(0,getCarPrice(b)-netCollected(b));
+}
+function activeRemainingAmount(b){
+  return isCancelledBooking(b)?0:remainingAmount(b);
+}
+function paymentShortfall(b){ return Math.max(0,getBookingAmount(b)-netCollected(b)); }
+function paymentModeLabel(b){
+  if(!b) return 'Walk-in Customer';
+  if(b.paymentCase==='Bank Case') return 'Bank Case';
+  if(b.paymentCase==='Walk-in Customer') return 'Walk-in Customer';
+  if((b.bankName && String(b.bankName).trim()) || (b.chequeNo && String(b.chequeNo).trim())) return 'Bank Case';
+  return 'Walk-in Customer';
+}
+function bankLabel(b){
+  if(!b) return 'Walk-in Customer';
+  if(paymentModeLabel(b)!=='Bank Case') return 'Walk-in Customer';
+  if(b.bankName && String(b.bankName).trim()) return b.bankName;
+  return 'Select Bank';
+}
+function variantKeyFromBooking(b){ return (carNameFromBooking(b)||'').toUpperCase().replace(/\s+/g,' ').trim(); }
+function variantList(){ return (S.cars||[]).map(function(c){return c.name;}); }
+function initVariantSummary(){ var base={}; variantList().forEach(function(v){ base[v]=0; }); return base; }
+function addVariantCount(base, booking){ var key=variantKeyFromBooking(booking); if(key){ if(base[key]===undefined) base[key]=0; base[key]++; } return base; }
+function variantColumnsHtml(counts){ return variantList().map(function(v){ return '<td class="center">'+((counts&&counts[v])||0)+'</td>'; }).join(''); }
+function variantHeaderHtml(){ return variantList().map(function(v){ return '<th class="center">'+v.replace('JETOUR ','')+'</th>'; }).join(''); }
+function dayInRange(d){ if(!d) return false; if(curDayFrom && d<curDayFrom) return false; if(curDayTo && d>curDayTo) return false; return true; }
+function accountingStatus(b){
+  var paid=totalPaid(b), booking=bookingReceived(b), balance=balanceReceived(b), refund=refundedAmount(b), net=netCollected(b), req=getBookingAmount(b), rem=remainingAmount(b), price=getCarPrice(b), eta=b&&b.confirmedDate;
+  if(!b || (!b.name && !b.carId && !paid && !refund)) return 'PENDING';
+  if(refund>0 && net<=0) return 'CANCELLED / REFUNDED';
+  if(refund>0 && net>0) return 'PARTIAL REFUND';
+  if(paid<=0) return 'PENDING';
+  if(req>0 && net<req) return eta ? 'ETA SET / UNDER BOOKING' : 'UNDER BOOKING';
+  if(price>0 && rem<=0 && net>0 && eta) return 'CONFIRMED';
+  if(price>0 && rem<=0 && net>0) return 'FULLY PAID';
+  if(req>0 && net>=req && rem>0){
+    if(eta && balance>0) return 'ETA SET / BALANCE PARTIAL';
+    if(eta) return 'ETA SET / WAITING BALANCE';
+    if(balance>0) return 'BALANCE PARTIAL';
+    return 'BOOKING COMPLETE';
+  }
+  if(balance>0 && rem>0) return eta ? 'ETA SET / BALANCE PARTIAL' : 'BALANCE PARTIAL';
+  if(net>0) return 'PAYMENT RECEIVED';
+  return 'PENDING';
+}
+function statusClass(st){
+  if(st==='PENDING') return 'b-pending';
+  if(st==='FULLY PAID' || st==='CONFIRMED') return 'b-complete';
+  if(st==='CANCELLED / REFUNDED') return 'b-pending';
+  return 'b-token';
+}
+function qrUrl(text,sz){sz=sz||70;return 'https://api.qrserver.com/v1/create-qr-code/?size='+sz+'x'+sz+'&data='+encodeURIComponent(text)+'&format=png&margin=3';}
+function qrText(b,smName){
+  return 'JETOUR MULTAN\nCode: '+b.code+'\nVehicle: '+(carNameFromBooking(b)||'-')+'\nCategory: '+(carCategoryFromBooking(b)||'-')+'\nCustomer: '+b.name+'\nCell: '+b.cell+'\nCity: '+(b.city||'-')+'\nVehicle Price: PKR '+N(getCarPrice(b))+'\nBooking Required: PKR '+N(getBookingAmount(b))+'\nBooking Paid: PKR '+N(bookingReceived(b))+'\nBalance Paid: PKR '+N(balanceReceived(b))+'\nRefund: PKR '+N(refundedAmount(b))+'\nNet Received: PKR '+N(netCollected(b))+'\nActive Due: PKR '+N(activeRemainingAmount(b))+'\nPayment Mode: '+paymentModeLabel(b)+'\nBank: '+bankLabel(b)+'\nCheque #: '+(b.chequeNo||'-')+'\nSalesman: '+smName;
+}
+
+// ═══════════════════════════════════════════════════════════
+// DASHBOARD PAGE
+// ═══════════════════════════════════════════════════════════
+function pageDashboard(){
+  var tot=allBks(); 
+  var totT1=tot.filter(function(b){return carCategoryFromBooking(b)==='T1'&&(b.name||b.token);}).length;
+  var totT2=tot.filter(function(b){return carCategoryFromBooking(b)==='T2'&&(b.name||b.token);}).length;
+  var totTok=tot.reduce(function(s,b){return s+bookingReceived(b);},0);
+  var totBal=tot.reduce(function(s,b){return s+balanceReceived(b);},0);
+  var totRefund=tot.reduce(function(s,b){return s+refundedAmount(b);},0);
+  var totNet=tot.reduce(function(s,b){return s+netCollected(b);},0);
+  var totOutstanding=tot.reduce(function(s,b){return s+remainingAmount(b);},0);
+  var totCancelled=tot.filter(function(b){ return accountingStatus(b)==='CANCELLED / REFUNDED'; }).length;
+  var todayAll=S.dailyLog.filter(function(l){return l.date===today();}).length;
+  var tgtT1=S.salesmen.reduce(function(s,sm){return s+getTarget(sm,'T1');},0), tgtT2=S.salesmen.reduce(function(s,sm){return s+getTarget(sm,'T2');},0);
+
+  // Person cards
+  var cards=S.salesmen.map(function(sm){
+    var st=smStats(sm);
+    var pT1=getTarget(sm,'T1')>0?Math.min(100,Math.round(st.aT1/getTarget(sm,'T1')*100)):0;
+    var pT2=getTarget(sm,'T2')>0?Math.min(100,Math.round(st.aT2/getTarget(sm,'T2')*100)):0;
+    return '<div class="person-card" onclick="goTo(\'salesman\',\''+sm.prefix+'\')">'
+      +'<div class="avatar" style="background:'+sm.color+'">'+initials(sm.name)+'</div>'
+      +'<h4>'+sm.name+'</h4>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">'
+      +'<span class="badge b-t1">T1: '+st.aT1+'/'+getTarget(sm,'T1')+'</span>'
+      +'<span class="badge b-t2">T2: '+st.aT2+'/'+getTarget(sm,'T2')+'</span>'
+      +(st.todayCount>0?'<span class="badge b-today">'+st.todayCount+' today</span>':'')
+      +'</div>'
+      +'<div style="margin-bottom:4px"><div class="prog-bg"><div class="prog-fill prog-t1" style="width:'+pT1+'%"></div></div></div>'
+      +'<div><div class="prog-bg"><div class="prog-fill prog-t2" style="width:'+pT2+'%"></div></div></div>'
+      +'<div class="person-mini-stats">'
+      +'<div class="pms"><div class="pl">Token</div><div class="pv" style="color:#059669;font-size:11px">'+N(st.tok)+'</div></div>'
+      +'<div class="pms"><div class="pl">Balance</div><div class="pv" style="color:#D97706;font-size:11px">'+N(st.bal)+'</div></div>'
+      +'<div class="pms"><div class="pl">Active Due</div><div class="pv" style="color:#DC2626;font-size:11px">'+N(st.outstanding)+'</div></div>'
+      +'<div class="pms"><div class="pl">Refund</div><div class="pv" style="color:#B91C1C;font-size:11px">'+N(st.refund)+'</div></div>'
+      +'</div></div>';
+  }).join('');
+
+  return '<div class="topbar"><div><div class="page-title">Dashboard <span>Overview</span></div><div style="font-size:11px;color:var(--ink3);margin-top:2px">Jetour Multan — T2 &amp; T1 Booking System</div></div>'
+    +'<div class="topbar-right"><div class="date-chip" id="dt-chip"></div></div></div>'
+
+    +'<div class="kpi-row">'
+    +'<div class="kpi t1"><div class="kpi-icon">🟣</div><div class="kpi-lbl">T1 Bookings</div><div class="kpi-val">'+totT1+'</div><div class="kpi-sub">Target: '+tgtT1+'</div></div>'
+    +'<div class="kpi t2"><div class="kpi-icon">🔵</div><div class="kpi-lbl">T2 Bookings</div><div class="kpi-val">'+totT2+'</div><div class="kpi-sub">Target: '+tgtT2+'</div></div>'
+    +'<div class="kpi grn"><div class="kpi-icon">💰</div><div class="kpi-lbl">Token Received</div><div class="kpi-val" style="font-size:18px">'+N(totTok)+'</div><div class="kpi-sub">PKR</div></div>'
+    +'<div class="kpi gold"><div class="kpi-icon">💳</div><div class="kpi-lbl">Balance Received</div><div class="kpi-val" style="font-size:18px">'+N(totBal)+'</div><div class="kpi-sub">PKR</div></div>'
+    +'<div class="kpi red"><div class="kpi-icon">📉</div><div class="kpi-lbl">Active Due</div><div class="kpi-val" style="font-size:18px">'+N(totOutstanding)+'</div><div class="kpi-sub">Customer balance due</div></div>'
+    +'<div class="kpi"><div class="kpi-icon">↩️</div><div class="kpi-lbl">Refund / Cancel</div><div class="kpi-val" style="font-size:18px;color:var(--red)">'+N(totRefund)+'</div><div class="kpi-sub">'+totCancelled+' cancelled</div></div>'
+    +'</div>'
+
+    +'<div class="chart-grid">'
+    +'<div class="chart-box"><div class="chart-title">T1 vs T2 Bookings — Per Salesman</div><div class="chart-sub">Comparison of T1 and T2 model bookings</div><div class="chart-wrap"><canvas id="ch-bar"></canvas></div></div>'
+    +'<div class="chart-box"><div class="chart-title">Payment Breakdown</div><div class="chart-sub">Token vs Balance vs Pending</div><div class="chart-wrap"><canvas id="ch-donut"></canvas></div></div>'
+    +'</div>'
+
+    +'<div class="chart-grid">'
+    +'<div class="chart-box"><div class="chart-title">Target Achievement — T1</div><div class="chart-sub">Each salesman vs assigned T1 target</div><div class="chart-wrap sm"><canvas id="ch-tgt1"></canvas></div></div>'
+    +'<div class="chart-box"><div class="chart-title">Target Achievement — T2</div><div class="chart-sub">Each salesman vs assigned T2 target</div><div class="chart-wrap sm"><canvas id="ch-tgt2"></canvas></div></div>'
+    +'</div>'
+
+    +'<div class="tbl-box"><div class="tbl-head"><h3>👥 All Salesmen Overview</h3></div>'
+    +'<div class="tbl-wrap scrollbar-thin"><table class="booking-grid"><thead><tr>'
+    +'<th>Salesman</th><th class="center">T1</th><th class="center">T2</th>'
+    +'<th class="center">T1 Rem</th><th class="center">T2 Rem</th>'
+    +'<th>Booking Paid</th><th>Balance Paid</th><th>Refund</th><th>Net Collected</th><th>Active Due</th><th class="center">Cancelled</th><th class="center">Today</th><th class="center">Action</th>'
+    +'</tr></thead><tbody>'
+    +S.salesmen.map(function(sm,i){
+      var st=smStats(sm);
+      return '<tr><td><div style="display:flex;align-items:center;gap:8px">'
+        +'<div style="width:28px;height:28px;border-radius:7px;background:'+sm.color+';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff">'+initials(sm.name)+'</div>'
+        +'<span style="font-weight:700;color:var(--ink)">'+sm.name+'</span></div></td>'
+        +'<td class="center"><span class="badge b-t1">'+st.aT1+'</span></td>'
+        +'<td class="center"><span class="badge b-t2">'+st.aT2+'</span></td>'
+        +'<td class="center" style="color:'+(st.remT1>0?'var(--red)':'var(--grn)')+';font-weight:700">'+st.remT1+'</td>'
+        +'<td class="center" style="color:'+(st.remT2>0?'var(--red)':'var(--grn)')+';font-weight:700">'+st.remT2+'</td>'
+        +'<td style="color:var(--grn);font-weight:600">'+N(st.tok)+'</td>'
+        +'<td style="color:var(--gold);font-weight:600">'+N(st.bal)+'</td>'
+        +'<td style="color:var(--red);font-weight:600">'+N(st.refund)+'</td>'
+        +'<td style="font-weight:700;color:var(--ink)">'+N(st.net)+'</td>'
+        +'<td style="color:var(--red);font-weight:700">'+N(st.outstanding)+'</td>'
+        +'<td class="center">'+(st.cancelled>0?'<span class="badge b-pending">'+st.cancelled+'</span>':'-')+'</td>'
+        +'<td class="center">'+(st.todayCount>0?'<span class="badge b-today">'+st.todayCount+'</span>':'-')+'</td>'
+        +'<td class="center"><button class="btn btn-xs btn-primary" onclick="goTo(\'salesman\',\''+sm.prefix+'\')">Open</button></td>'
+        +'</tr>';
+    }).join('')
+    +'</tbody></table></div></div>'
+
+    +'<div style="margin-bottom:8px;font-size:13px;font-weight:700;color:var(--ink)">👤 Salesman Cards</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px">'+cards+'</div>';
+}
+
+// ═══════════════════════════════════════════════════════════
+// DAY WISE PAGE
+// ═══════════════════════════════════════════════════════════
+function pageDayWise(){
+  var logs = S.dailyLog.filter(function(l){ return dayInRange(l.date) && (curDaySm==='ALL' || l.prefix===curDaySm); });
+  var byDate={};
+  logs.forEach(function(l){ if(!byDate[l.date]) byDate[l.date]=[]; byDate[l.date].push(l); });
+  var dates=Object.keys(byDate).sort().reverse();
+
+  if(!S.dailyLog.length) return '<div class="topbar"><div class="page-title">Day Wise <span>Bookings</span></div></div>'
+    +'<div class="chart-box" style="text-align:center;padding:50px;background:var(--surface);border-radius:var(--r)"><div style="font-size:40px;margin-bottom:12px">📅</div><div style="font-size:15px;font-weight:700;color:var(--ink3)">Abhi koi booking log nahi</div><div style="font-size:12px;color:var(--ink3);margin-top:6px">Salesman sheets mein data dalein — yahan automatically aa jayega</div></div>';
+
+  if(!dates.length) return '<div class="topbar"><div class="page-title">Day Wise <span>Bookings</span></div></div>'
+    +'<div class="chart-box" style="padding:22px"><div class="filter-bar"><span style="font-size:12px;font-weight:700;color:var(--ink)">Date Filter:</span><input type="date" id="day-from" value="'+esc(curDayFrom)+'" onchange="setDayFilter()"><input type="date" id="day-to" value="'+esc(curDayTo)+'" onchange="setDayFilter()"><select id="day-salesman-filter" onchange="setDaySalesmanFilter()">'+reportSalesmanOptionsHtml(curDaySm)+'</select><button class="btn btn-sm" onclick="clearDayFilter()">Clear</button></div><div style="padding:30px 0;text-align:center;color:var(--ink3);font-weight:700">Selected range me koi booking nahi mili.</div></div>';
+
+  var dayBlocks=dates.map(function(d){
+    var dayLogs=byDate[d];
+    var t1=dayLogs.filter(function(l){return l.category==='T1';}).length;
+    var t2=dayLogs.filter(function(l){return l.category==='T2';}).length;
+    var tok=dayLogs.reduce(function(s,l){return s+(parseFloat(l.token)||0);},0);
+    var bal=dayLogs.reduce(function(s,l){return s+(parseFloat(l.balance)||0);},0);
+    var refund=dayLogs.reduce(function(s,l){return s+(parseFloat(l.refund)||0);},0);
+    var outstanding=dayLogs.reduce(function(s,l){return s+(parseFloat(l.remaining)||0);},0);
+    var bySm={};
+    dayLogs.forEach(function(l){
+      if(!bySm[l.smName]) bySm[l.smName]={logs:[], variants:initVariantSummary()};
+      bySm[l.smName].logs.push(l);
+      var key=(l.carName||'').toUpperCase().replace(/\s+/g,' ').trim();
+      if(key){ if(bySm[l.smName].variants[key]===undefined) bySm[l.smName].variants[key]=0; bySm[l.smName].variants[key]++; }
+    });
+    var dStr=new Date(d+'T00:00:00').toLocaleDateString('en-PK',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    var isToday=d===today();
+    var smRows=Object.keys(bySm).map(function(nm){
+      var obj=bySm[nm], ls=obj.logs;
+      var st1=ls.filter(function(l){return l.category==='T1';}).length;
+      var st2=ls.filter(function(l){return l.category==='T2';}).length;
+      var totalPaidDay=ls.reduce(function(s,l){return s+(parseFloat(l.netCollected||l.totalPaid)||0);},0);
+      var remDay=ls.reduce(function(s,l){return s+(parseFloat(l.remaining)||0);},0);
+      var refundDay=ls.reduce(function(s,l){return s+(parseFloat(l.refund)||0);},0);
+      var codes=ls.map(function(l){return '<span class="badge '+(l.category==='T1'?'b-t1':'b-t2')+'">'+l.code+'</span>';}).join(' ');
+      return '<tr><td style="font-weight:700;color:var(--ink)">'+nm+'</td>'
+        +'<td class="center">'+(st1?'<span class="badge b-t1">'+st1+'</span>':'-')+'</td>'
+        +'<td class="center">'+(st2?'<span class="badge b-t2">'+st2+'</span>':'-')+'</td>'
+        +variantColumnsHtml(obj.variants)
+        +'<td style="color:var(--grn);font-weight:700">PKR '+N(totalPaidDay)+'</td>'
+        +'<td style="color:var(--red);font-weight:700">PKR '+N(remDay)+'</td>'
+        +'<td style="color:var(--red);font-weight:700">PKR '+N(refundDay)+'</td>'
+        +'<td style="font-size:11px">'+codes+'</td></tr>';
+    }).join('');
+    return '<div class="day-block">'
+      +'<div class="day-header"><div><h4>'+dStr+(isToday?' <span class="badge b-today">TODAY</span>':'')+'</h4></div><div class="day-stats"><span class="badge b-t1">T1: '+t1+'</span><span class="badge b-t2">T2: '+t2+'</span><span style="font-size:11px;font-weight:600;color:var(--grn)">Booking: PKR '+N(tok)+'</span><span style="font-size:11px;font-weight:600;color:var(--gold)">Balance: PKR '+N(bal)+'</span><span style="font-size:11px;font-weight:700;color:var(--red)">Refund: PKR '+N(refund)+'</span><span style="font-size:11px;font-weight:700;color:var(--red)">Active Due: PKR '+N(outstanding)+'</span></div></div>'
+      +'<div class="day-body"><table><thead><tr><th>Salesman</th><th class="center">T1</th><th class="center">T2</th>'+variantHeaderHtml()+'<th>Net Collected</th><th>Active Due</th><th>Refund</th><th>Booking Codes</th></tr></thead><tbody>'+smRows+'</tbody></table></div></div>';
+  }).join('');
+
+  return '<div class="topbar"><div class="page-title">Day Wise <span>Bookings</span></div></div>'
+    +'<div class="chart-box" style="margin-bottom:16px"><div class="filter-bar" style="margin:0"><span style="font-size:12px;font-weight:700;color:var(--ink)">Date Filter:</span><input type="date" id="day-from" value="'+esc(curDayFrom)+'" onchange="setDayFilter()"><input type="date" id="day-to" value="'+esc(curDayTo)+'" onchange="setDayFilter()"><select id="day-salesman-filter" onchange="setDaySalesmanFilter()">'+reportSalesmanOptionsHtml(curDaySm)+'</select><button class="btn btn-sm" onclick="clearDayFilter()">Clear</button></div><div style="font-size:11px;color:var(--ink3);margin-top:8px">Selected bookings ko user-wise aur variant-wise detail me show kiya gaya hai.</div></div>'
+    +'<div class="chart-grid" style="margin-bottom:16px"><div class="chart-box"><div class="chart-title">Daily Booking Trend (Last 7 Active Days)</div><div class="chart-sub">Filtered range ke mutabiq</div><div class="chart-wrap"><canvas id="ch-trend"></canvas></div></div><div class="chart-box"><div class="chart-title">Filtered Breakdown</div><div class="chart-sub">User wise booking count</div><div class="chart-wrap"><canvas id="ch-today"></canvas></div></div></div>'
+    + dayBlocks;
+}
+
+// ═══════════════════════════════════════════════════════════
+// MONTHLY PAGE
+// ═══════════════════════════════════════════════════════════
+function pageMonthly(){
+  var logs = S.dailyLog.filter(function(l){ return (!curMonthFilter || (l.date||'').slice(0,7)===curMonthFilter) && (curMonthSm==='ALL' || l.prefix===curMonthSm); });
+  var byMonth={};
+  logs.forEach(function(l){
+    var m=(l.date||'').slice(0,7);
+    if(!m) return;
+    if(!byMonth[m]) byMonth[m]={t1:0,t2:0,tok:0,bal:0,refund:0,total:0,outstanding:0,variants:initVariantSummary(),bySm:{}};
+    if(l.category==='T1') byMonth[m].t1++; else if(l.category==='T2') byMonth[m].t2++;
+    byMonth[m].tok+=parseFloat(l.token)||0;
+    byMonth[m].bal+=parseFloat(l.balance)||0;
+    byMonth[m].refund+=parseFloat(l.refund)||0;
+    byMonth[m].total+=parseFloat(l.netCollected||l.totalPaid)||0;
+    byMonth[m].outstanding+=parseFloat(l.remaining)||0;
+    var key=(l.carName||'').toUpperCase().replace(/\s+/g,' ').trim();
+    if(key){ if(byMonth[m].variants[key]===undefined) byMonth[m].variants[key]=0; byMonth[m].variants[key]++; }
+    if(!byMonth[m].bySm[l.smName]) byMonth[m].bySm[l.smName]={t1:0,t2:0,tok:0,bal:0,refund:0,total:0,outstanding:0,variants:initVariantSummary()};
+    if(l.category==='T1') byMonth[m].bySm[l.smName].t1++; else if(l.category==='T2') byMonth[m].bySm[l.smName].t2++;
+    byMonth[m].bySm[l.smName].tok+=parseFloat(l.token)||0;
+    byMonth[m].bySm[l.smName].bal+=parseFloat(l.balance)||0;
+    byMonth[m].bySm[l.smName].refund+=parseFloat(l.refund)||0;
+    byMonth[m].bySm[l.smName].total+=parseFloat(l.netCollected||l.totalPaid)||0;
+    byMonth[m].bySm[l.smName].outstanding+=parseFloat(l.remaining)||0;
+    if(key){ if(byMonth[m].bySm[l.smName].variants[key]===undefined) byMonth[m].bySm[l.smName].variants[key]=0; byMonth[m].bySm[l.smName].variants[key]++; }
+  });
+  var months=Object.keys(byMonth).sort().reverse();
+
+  if(!S.dailyLog.length) return '<div class="topbar"><div class="page-title">Monthly <span>Report</span></div></div><div class="chart-box" style="text-align:center;padding:50px;background:var(--surface);border-radius:var(--r)"><div style="font-size:40px;margin-bottom:12px">📆</div><div style="font-size:15px;font-weight:700;color:var(--ink3)">Abhi koi monthly data nahi</div></div>';
+
+  var topFilter = '<div class="chart-box" style="margin-bottom:16px"><div class="filter-bar" style="margin:0"><span style="font-size:12px;font-weight:700;color:var(--ink)">Month Filter:</span><input type="month" id="month-filter" value="'+esc(curMonthFilter)+'" onchange="setMonthFilter()"><select id="month-salesman-filter" onchange="setMonthSalesmanFilter()">'+reportSalesmanOptionsHtml(curMonthSm)+'</select><button class="btn btn-sm" onclick="clearMonthFilter()">Clear</button></div><div style="font-size:11px;color:var(--ink3);margin-top:8px">Month select karne par all salesmen ya selected salesman ki complete variant report show hogi.</div></div>';
+
+  if(!months.length) return '<div class="topbar"><div class="page-title">Monthly <span>Report</span></div></div>' + topFilter + '<div class="chart-box" style="padding:30px;text-align:center;color:var(--ink3);font-weight:700">Selected month me koi booking nahi mili.</div>';
+
+  var monthCards=months.map(function(m){
+    var md=byMonth[m];
+    var mStr=new Date(m+'-01').toLocaleDateString('en-PK',{month:'long',year:'numeric'});
+    var smRows=Object.keys(md.bySm).map(function(nm){
+      var row=md.bySm[nm];
+      return '<tr><td style="font-weight:700">'+nm+'</td><td class="center"><span class="badge b-t1">'+row.t1+'</span></td><td class="center"><span class="badge b-t2">'+row.t2+'</span></td>'
+        + variantColumnsHtml(row.variants)
+        + '<td style="color:var(--grn);font-weight:700">PKR '+N(row.tok)+'</td><td style="color:var(--gold);font-weight:700">PKR '+N(row.bal)+'</td><td style="color:var(--red);font-weight:700">PKR '+N(row.refund)+'</td><td style="font-weight:800">PKR '+N(row.total)+'</td><td style="color:var(--red);font-weight:800">PKR '+N(row.outstanding)+'</td></tr>';
+    }).join('');
+    return '<div class="tbl-box" style="margin-bottom:12px"><div class="tbl-head"><h3>📆 '+mStr+'</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="badge b-t1">T1: '+md.t1+'</span><span class="badge b-t2">T2: '+md.t2+'</span>'+variantList().map(function(v){return '<span class="badge '+(v.indexOf('T1')>-1?'b-t1':'b-t2')+'">'+v.replace('JETOUR ','')+': '+(md.variants[v]||0)+'</span>';}).join('')+'<span style="font-size:11px;font-weight:700;color:var(--grn)">Net: PKR '+N(md.total)+'</span><span style="font-size:11px;font-weight:700;color:var(--red)">Refund: PKR '+N(md.refund)+'</span><span style="font-size:11px;font-weight:700;color:var(--red)">Active Due: PKR '+N(md.outstanding)+'</span></div></div><div class="tbl-wrap"><table><thead><tr><th>Salesman</th><th class="center">T1</th><th class="center">T2</th>'+variantHeaderHtml()+'<th>Booking Paid</th><th>Balance Paid</th><th>Refund</th><th>Net Collected</th><th>Active Due</th></tr></thead><tbody>'+smRows+'</tbody></table></div></div>';
+  }).join('');
+
+  return '<div class="topbar"><div class="page-title">Monthly <span>Report</span></div></div>' + topFilter
+    + '<div class="chart-box wide" style="margin-bottom:16px"><div class="chart-title">Monthly Booking Trend</div><div class="chart-sub">T1 vs T2 per month</div><div class="chart-wrap"><canvas id="ch-monthly"></canvas></div></div>'
+    + monthCards;
+}
+
+// ═══════════════════════════════════════════════════════════
+// TARGETS PAGE
+// ═══════════════════════════════════════════════════════════
+function pageTargets(){
+  var allb=allBks();
+  var totT1=allb.filter(function(b){return carCategoryFromBooking(b)==='T1'&&(b.name||b.token);}).length;
+  var totT2=allb.filter(function(b){return carCategoryFromBooking(b)==='T2'&&(b.name||b.token);}).length;
+  var tT1=S.salesmen.reduce(function(s,sm){return s+getTarget(sm,'T1');},0), tT2=S.salesmen.reduce(function(s,sm){return s+getTarget(sm,'T2');},0);
+  var p1=tT1>0?Math.min(100,Math.round(totT1/tT1*100)):0;
+  var p2=tT2>0?Math.min(100,Math.round(totT2/tT2*100)):0;
+  var perSm=S.salesmen.map(function(sm){
+    var bks=smBks(sm.prefix);
+    var aT1=bks.filter(function(b){return carCategoryFromBooking(b)==='T1'&&(b.name||b.token);}).length;
+    var aT2=bks.filter(function(b){return carCategoryFromBooking(b)==='T2'&&(b.name||b.token);}).length;
+    var pT1=getTarget(sm,'T1')>0?Math.min(100,Math.round(aT1/getTarget(sm,'T1')*100)):0;
+    var pT2=getTarget(sm,'T2')>0?Math.min(100,Math.round(aT2/getTarget(sm,'T2')*100)):0;
+    return '<tr><td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:7px;background:'+sm.color+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">'+initials(sm.name)+'</div><span style="font-weight:700">'+sm.name+'</span></div></td><td class="center"><input type="number" value="'+getTarget(sm,'T1')+'" min="0" id="tgt-t1-'+sm.prefix+'" style="width:62px;text-align:center"></td><td class="center"><span class="badge b-t1">'+aT1+'</span></td><td><div class="prog-bg"><div class="prog-fill prog-t1" style="width:'+pT1+'%"></div></div><div style="font-size:9px;color:var(--ink3);margin-top:2px">'+pT1+'%</div></td><td class="center" style="color:'+(getTarget(sm,'T1')-aT1>0?'var(--red)':'var(--grn)')+';font-weight:700">'+Math.max(0,getTarget(sm,'T1')-aT1)+'</td><td class="center"><input type="number" value="'+getTarget(sm,'T2')+'" min="0" id="tgt-t2-'+sm.prefix+'" style="width:62px;text-align:center"></td><td class="center"><span class="badge b-t2">'+aT2+'</span></td><td><div class="prog-bg"><div class="prog-fill prog-t2" style="width:'+pT2+'%"></div></div><div style="font-size:9px;color:var(--ink3);margin-top:2px">'+pT2+'%</div></td><td class="center" style="color:'+(getTarget(sm,'T2')-aT2>0?'var(--red)':'var(--grn)')+';font-weight:700">'+Math.max(0,getTarget(sm,'T2')-aT2)+'</td><td class="center"><button class="btn btn-xs btn-primary" onclick="setSmTargets(\''+sm.prefix+'\')">Save</button></td></tr>';
+  }).join('');
+  return '<div class="topbar"><div class="page-title">Targets <span>Management</span></div></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px"><div class="chart-box"><div class="chart-title" style="color:var(--t1)">🟣 T1 Team Target</div><div class="chart-sub">Total achieved '+totT1+' / '+tT1+'</div><div style="font-size:32px;font-weight:900;color:var(--t1);margin-bottom:6px">'+p1+'%</div><div class="prog-bg" style="height:12px;border-radius:6px"><div class="prog-fill prog-t1" style="height:12px;border-radius:6px;width:'+p1+'%"></div></div></div><div class="chart-box"><div class="chart-title" style="color:var(--t2)">🔵 T2 Team Target</div><div class="chart-sub">Total achieved '+totT2+' / '+tT2+'</div><div style="font-size:32px;font-weight:900;color:var(--t2);margin-bottom:6px">'+p2+'%</div><div class="prog-bg" style="height:12px;border-radius:6px"><div class="prog-fill prog-t2" style="height:12px;border-radius:6px;width:'+p2+'%"></div></div></div></div>'
+    +'<div class="tbl-box"><div class="tbl-head"><h3>Per Salesman Target Breakdown</h3></div><div class="tbl-wrap scrollbar-thin"><table class="booking-grid"><thead><tr><th>Salesman</th><th class="center">T1 Target</th><th class="center">T1 Done</th><th>T1 Progress</th><th class="center">T1 Remaining</th><th class="center">T2 Target</th><th class="center">T2 Done</th><th>T2 Progress</th><th class="center">T2 Remaining</th><th class="center">Action</th></tr></thead><tbody>'+perSm+'</tbody></table></div></div>'
+    +'<div class="tbl-box"><div class="tbl-head"><h3>Vehicle Price Setup</h3></div><div class="tbl-wrap"><table><thead><tr><th>Vehicle</th><th class="center">Category</th><th>Vehicle Price (PKR)</th><th>Booking Amount (PKR)</th><th class="center">Action</th></tr></thead><tbody>'+(S.cars||[]).map(function(car){ return '<tr><td style="font-weight:700">'+car.name+'</td><td class="center"><span class="badge '+(car.category==='T1'?'b-t1':'b-t2')+'">'+car.category+'</span></td><td><input type="number" id="car-price-'+car.id+'" value="'+(parseFloat(car.price)||0)+'" min="0" style="min-width:150px"></td><td><input type="number" id="car-booking-'+car.id+'" value="'+(parseFloat(car.bookingAmount)||0)+'" min="0" style="min-width:150px"></td><td class="center"><button class="btn btn-xs btn-primary" onclick="saveCarPricing(\''+car.id+'\')">Save</button></td></tr>'; }).join('')+'</tbody></table></div></div>';
+}
+
+// ═══════════════════════════════════════════════════════════
+// SALESMAN PAGE
+// ═══════════════════════════════════════════════════════════
+function pageSalesman(){
+  var sm=S.salesmen.find(function(s){return s.prefix===curSm;});
+  if(!sm)return '<div>Salesman not found</div>';
+  var bks=smBks(sm.prefix);
+  var st=smStats(sm);
+  var tok=st.tok, bal=st.bal;
+  var dispBks=curFilter==='ALL'?bks:bks.filter(function(b){return carCategoryFromBooking(b)===curFilter;});
+  var rows=dispBks.map(function(b){
+    var i=bks.indexOf(b);
+    var hasD=b.name&&b.cell, hasM=!!(b.carId||b.model);
+    var total=totalPaid(b), price=getCarPrice(b), req=getBookingAmount(b), rem=remainingAmount(b), balPaid=balanceReceived(b);
+    var status=accountingStatus(b), sc=statusClass(status), pfx=sm.prefix;
+    var qr=hasD&&hasM?'<img class="qr-img" src="'+qrUrl(qrText(b,sm.name),56)+'" loading="lazy" alt="QR">':'<div class="qr-ph">Naam+Cell<br>+Vehicle</div>';
+    return '<tr>'
+      +'<td style="font-weight:700;color:var(--t2);font-family:IBM Plex Mono,monospace;font-size:11px">'+b.code+'</td>'
+      +'<td><select onchange="upd(\''+pfx+'\','+i+',\'carId\',this.value)" style="font-weight:700;color:'+((carCategoryFromBooking(b)==='T1')?'var(--t1)':(carCategoryFromBooking(b)==='T2'?'var(--t2)':'#999'))+'"><option value=""'+ (!(b.carId||b.model)?'selected':'')+'>Select Vehicle</option>'+(S.cars||[]).map(function(car){return '<option value="'+car.id+'"'+((b.carId||b.model)===car.id?' selected':'')+'>'+car.name+'</option>';}).join('')+'</select></td>'
+      +'<td style="font-weight:700;color:'+(carCategoryFromBooking(b)==='T1'?'var(--t1)':carCategoryFromBooking(b)==='T2'?'var(--t2)':'var(--ink3)')+'">'+(carCategoryFromBooking(b)||'-')+'</td>'
+      +'<td><input type="text" value="'+esc(b.name)+'" placeholder="Customer Name" onchange="upd(\''+pfx+'\','+i+',\'name\',this.value)" style=""></td>'
+      +'<td><input type="text" value="'+esc(b.cell)+'" placeholder="03XX-XXXXXXX" onchange="upd(\''+pfx+'\','+i+',\'cell\',this.value)" style=""></td>'
+      +'<td><select onchange="upd(\''+pfx+'\','+i+',\'city\',this.value)" style=""><option value="">Select City</option>'+(S.cities||[]).map(function(city){return '<option value="'+city+'"'+(b.city===city?' selected':'')+'>'+city+'</option>';}).join('')+'</select></td>'
+      +'<td><select onchange="upd(\''+pfx+'\','+i+',\'paymentCase\',this.value)" style=""><option value="Walk-in Customer"'+((b.paymentCase||'Walk-in Customer')==='Walk-in Customer'?' selected':'')+'>Walk-in</option><option value="Bank Case"'+((b.paymentCase||'Walk-in Customer')==='Bank Case'?' selected':'')+'>Bank Case</option></select></td>'
+      +'<td><select onchange="upd(\''+pfx+'\','+i+',\'bankName\',this.value)" style="" '+((b.paymentCase||'Walk-in Customer')==='Bank Case'?'':'disabled')+'><option value="">Select Bank</option>'+(S.banks||[]).map(function(bank){return '<option value="'+bank+'"'+(b.bankName===bank?' selected':'')+'>'+bank+'</option>';}).join('')+'</select></td>'
+      +'<td><input type="text" value="'+esc(b.chequeNo)+'" placeholder="Cheque / Ref #" onchange="upd(\''+pfx+'\','+i+',\'chequeNo\',this.value)" style=""></td>'
+      +'<td><input type="date" value="'+esc(b.caseDate)+'" onchange="upd(\''+pfx+'\','+i+',\'caseDate\',this.value)" style=""></td>'
+      +'<td><input type="date" value="'+esc(b.confirmedDate)+'" onchange="upd(\''+pfx+'\','+i+',\'confirmedDate\',this.value)" style="" '+((activeRemainingAmount(b)<=0 && netCollected(b)>0 && !isCancelledBooking(b))?'':'disabled')+'></td>'
+      +'<td class="num-cell" style="font-weight:700;color:var(--ink);white-space:nowrap">'+(price>0?('PKR '+price.toLocaleString()):'-')+'</td>'
+      +'<td class="num-cell" style="font-weight:700;color:var(--t2);white-space:nowrap">'+(req>0?('PKR '+req.toLocaleString()):'-')+'</td>'
+      +'<td><input type="number" value="'+bookingReceived(b)+'" placeholder="0" onchange="upd(\''+pfx+'\','+i+',\'token\',this.value)" style="color:var(--grn);font-weight:700"></td>'
+      +'<td><input type="number" value="'+additionalReceived(b)+'" placeholder="0" onchange="upd(\''+pfx+'\','+i+',\'balance\',this.value)" style="color:var(--gold);font-weight:700"></td>'
+      +'<td><input type="number" value="'+refundedAmount(b)+'" placeholder="0" onchange="upd(\''+pfx+'\','+i+',\'refund\',this.value);toggleRefundCheque(\''+pfx+'\','+i+',this.value)" style="color:var(--red);font-weight:700"></td>'
+      +'<td><div id="refund-wrap-'+pfx+'-'+i+'" style="display:'+(refundedAmount(b)>0?'block':'none')+'"><input type="text" value="'+esc(b.refundChequeNo)+'" placeholder="Refund Cheque #" onchange="upd(\''+pfx+'\','+i+',\'refundChequeNo\',this.value)" style=""></div></td>'
+      +'<td class="num-cell" style="font-weight:700;color:var(--ink);white-space:nowrap">'+(netCollected(b)>0?'PKR '+netCollected(b).toLocaleString():'-')+'</td>'
+      +'<td class="num-cell" style="font-weight:700;color:'+(rem>0?'var(--red)':'var(--grn)')+';white-space:nowrap">'+(price>0?('PKR '+rem.toLocaleString()):'-')+'</td>'
+      +'<td class="status-cell"><span class="badge '+sc+'">'+status+'</span></td>'
+      +'<td>'+qr+'</td>'
+      +'<td>'+(hasD&&hasM?'<button class="btn btn-xs btn-primary" onclick="printR(\''+pfx+'\','+i+')">🖨</button>':'<button class="btn btn-xs" disabled style="opacity:.35">🖨</button>')+'</td>'
+      +'</tr>';
+  }).join('');
+  return '<div class="topbar"><div style="display:flex;align-items:center;gap:12px"><div style="width:44px;height:44px;border-radius:12px;background:'+sm.color+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800">'+initials(sm.name)+'</div><div><div class="page-title">'+sm.name+'</div><div style="font-size:11px;color:var(--ink3)">'+(smBks(sm.prefix).filter(function(b){return b.name;}).length)+' bookings entered</div></div></div><div style="display:flex;gap:8px"><button class="btn btn-sm btn-grn" onclick="addCodes(\''+sm.prefix+'\')">➕ 5 More Codes</button></div></div>'
+    +'<div class="detail-panel"><div class="dp-kpis"><div class="dp-kpi"><div class="dk-lbl">T1 Bookings</div><div class="dk-val" style="color:var(--t1)">'+st.aT1+'<span style="font-size:11px;color:var(--ink3)">/'+getTarget(sm,'T1')+'</span></div></div><div class="dp-kpi"><div class="dk-lbl">T2 Bookings</div><div class="dk-val" style="color:var(--t2)">'+st.aT2+'<span style="font-size:11px;color:var(--ink3)">/'+getTarget(sm,'T2')+'</span></div></div><div class="dp-kpi"><div class="dk-lbl">T1 Remaining</div><div class="dk-val" style="color:'+( st.remT1>0?'var(--red)':'var(--grn)')+'">'+st.remT1+'</div></div><div class="dp-kpi"><div class="dk-lbl">T2 Remaining</div><div class="dk-val" style="color:'+(st.remT2>0?'var(--red)':'var(--grn)')+'">'+st.remT2+'</div></div><div class="dp-kpi"><div class="dk-lbl">Booking Paid</div><div class="dk-val" style="font-size:14px;color:var(--grn)">'+N(tok)+'</div></div><div class="dp-kpi"><div class="dk-lbl">Balance Paid</div><div class="dk-val" style="font-size:14px;color:var(--gold)">'+N(bal)+'</div></div><div class="dp-kpi"><div class="dk-lbl">Refund</div><div class="dk-val" style="font-size:14px;color:var(--red)">'+N(st.refund)+'</div></div><div class="dp-kpi"><div class="dk-lbl">Active Due</div><div class="dk-val" style="font-size:14px;color:var(--red)">'+N(st.outstanding)+'</div></div><div class="dp-kpi"><div class="dk-lbl">Net Collected</div><div class="dk-val" style="font-size:14px;color:var(--ink)">'+N(st.net)+'</div></div><div class="dp-kpi"><div class="dk-lbl">Today</div><div class="dk-val" style="color:var(--gold)">'+st.todayCount+'</div></div></div>'
+    +'<div style="display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:8px;margin-bottom:12px">'+variantList().map(function(v){var c=bks.filter(function(x){return variantKeyFromBooking(x)===v && (x.name||x.token);}).length; return '<div class="dp-kpi"><div class="dk-lbl">'+v.replace('JETOUR ','')+'</div><div class="dk-val" style="font-size:16px">'+c+'</div></div>';}).join('')+'</div>'
++'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><div style="font-size:10px;font-weight:700;color:var(--ink3);margin-bottom:4px">T1 PROGRESS</div><div class="prog-bg" style="height:10px;border-radius:5px"><div class="prog-fill prog-t1" style="height:10px;border-radius:5px;width:'+(getTarget(sm,'T1')>0?Math.min(100,Math.round(st.aT1/getTarget(sm,'T1')*100)):0)+'%"></div></div><div style="font-size:10px;color:var(--ink3);margin-top:3px">'+(getTarget(sm,'T1')>0?Math.round(st.aT1/getTarget(sm,'T1')*100):0)+'% complete</div></div><div><div style="font-size:10px;font-weight:700;color:var(--ink3);margin-bottom:4px">T2 PROGRESS</div><div class="prog-bg" style="height:10px;border-radius:5px"><div class="prog-fill prog-t2" style="height:10px;border-radius:5px;width:'+(getTarget(sm,'T2')>0?Math.min(100,Math.round(st.aT2/getTarget(sm,'T2')*100)):0)+'%"></div></div><div style="font-size:10px;color:var(--ink3);margin-top:3px">'+(getTarget(sm,'T2')>0?Math.round(st.aT2/getTarget(sm,'T2')*100):0)+'% complete</div></div></div></div>'
+    +'<div class="chart-grid" style="margin-bottom:14px"><div class="chart-box"><div class="chart-title">Booking Status Breakdown</div><div class="chart-wrap sm"><canvas id="ch-sm-status"></canvas></div></div><div class="chart-box"><div class="chart-title">Payment Collection</div><div class="chart-wrap sm"><canvas id="ch-sm-pay"></canvas></div></div></div>'
+    +'<div style="background:var(--surface);border:1px solid #E8ECF0;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:11px;color:var(--ink3)"><strong style="color:var(--ink)">Accounting flow:</strong> Booking Paid = initial amount received, Balance Paid = baad ki payment, Refund = customer ko wapas ki gayi amount, Active Due sirf live customer cases ka show hoga. Cancelled / fully refunded case ka due zero hoga aur cards/reports me include nahi hoga. Confirmed Delivery Date dalne ke baad aur poori payment receive hone par status <strong style="color:var(--grn)">CONFIRMED</strong> ho jayega.</div>'
+    +'<div class="tbl-box"><div class="tbl-head"><div class="filter-bar" style="margin:0"><span style="font-size:12px;font-weight:700;color:var(--ink);margin-right:4px">Filter:</span>'+['ALL','T1','T2'].map(function(f){return '<div class="filter-pill fp-'+f+' '+(curFilter===f?'active':'')+'" onclick="setFilter(\''+f+'\')">'+( f==='T1'?'🟣 T1':f==='T2'?'🔵 T2':'All')+'</div>';}).join('')+'</div></div>'
+    +'<div class="tbl-wrap scrollbar-thin"><table class="booking-grid"><colgroup><col style="width:90px"><col style="width:210px"><col style="width:70px"><col style="width:170px"><col style="width:140px"><col style="width:180px"><col style="width:130px"><col style="width:230px"><col style="width:145px"><col style="width:135px"><col style="width:170px"><col style="width:150px"><col style="width:150px"><col style="width:150px"><col style="width:150px"><col style="width:150px"><col style="width:155px"><col style="width:145px"><col style="width:145px"><col style="width:180px"><col style="width:88px"><col style="width:88px"></colgroup><thead><tr><th>Code</th><th>Vehicle</th><th>Cat</th><th>Customer Name</th><th>Cell No.</th><th>City</th><th>Case</th><th>Bank</th><th>Cheque #</th><th>Case Date</th><th>Confirmed Delivery Date</th><th>Vehicle Price</th><th>Booking Amount</th><th>Booking Paid</th><th>Balance Paid</th><th>Refund</th><th>Refund Cheque #</th><th>Net Paid</th><th>Active Due</th><th>Status</th><th>QR</th><th>Print</th></tr></thead><tbody>'+(rows||'<tr><td colspan="22" style="padding:24px;text-align:center;color:var(--ink3)">Koi booking nahi is filter mein</td></tr>')+'</tbody><tfoot><tr style="background:var(--ink);color:#fff"><td style="padding:9px 12px;font-weight:700">TOTALS</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="num-cell" style="padding:9px 12px;font-weight:700;color:#A5D6A7">PKR '+N(tok)+'</td><td class="num-cell" style="padding:9px 12px;font-weight:700;color:#FCD34D">PKR '+N(bal)+'</td><td class="num-cell" style="padding:9px 12px;font-weight:700;color:#FCA5A5">PKR '+N(st.refund)+'</td><td></td><td class="num-cell" style="padding:9px 12px;font-weight:700;color:#fff">PKR '+N(st.net)+'</td><td class="num-cell" style="padding:9px 12px;font-weight:700;color:#FCA5A5">PKR '+N(st.outstanding)+'</td><td></td><td></td><td></td></tr></tfoot></table></div></div>';
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// LEDGER PAGE
+// ═══════════════════════════════════════════════════════════
+function ledgerRowsData(){
+  var rows=[];
+  S.salesmen.forEach(function(sm){
+    smBks(sm.prefix).forEach(function(b){
+      if(!b || (!b.name && !b.carId && !totalPaid(b) && !refundedAmount(b) && !b.caseDate && !b.confirmedDate)) return;
+      rows.push({
+        prefix: sm.prefix,
+        salesman: sm.name,
+        code: b.code||'',
+        customer: b.name||'',
+        vehicle: carNameFromBooking(b)||'-',
+        category: carCategoryFromBooking(b)||'-',
+        bookingPaid: bookingReceived(b),
+        balancePaid: balanceReceived(b),
+        refund: refundedAmount(b),
+        net: netCollected(b),
+        remaining: activeRemainingAmount(b),
+        status: accountingStatus(b),
+        confirmedDate: b.confirmedDate||'',
+        paymentCase: paymentModeLabel(b),
+        bank: bankLabel(b),
+        chequeNo: b.chequeNo||'-',
+        refundChequeNo: b.refundChequeNo||'-',
+        city: b.city||'-'
+      });
+    });
+  });
+  rows = rows.filter(function(r){ return curLedgerSm==='ALL' || r.prefix===curLedgerSm; });
+  return rows.sort(function(a,b){ return (a.salesman+a.code).localeCompare(b.salesman+b.code); });
+}
+function pageLedger(){
+  var rows=ledgerRowsData();
+  var totalBooking=rows.reduce(function(s,r){return s+r.bookingPaid;},0);
+  var totalBalance=rows.reduce(function(s,r){return s+r.balancePaid;},0);
+  var totalRefund=rows.reduce(function(s,r){return s+r.refund;},0);
+  var totalNet=rows.reduce(function(s,r){return s+r.net;},0);
+  var totalRemaining=rows.reduce(function(s,r){return s+r.remaining;},0);
+  var totalCancelled=rows.filter(function(r){return r.status==='CANCELLED / REFUNDED';}).length;
+  var body=rows.map(function(r){
+    return '<tr>'
+      +'<td style="font-family:\'IBM Plex Mono\',monospace;font-weight:700;color:var(--t2)">'+r.code+'</td>'
+      +'<td style="font-weight:700">'+r.salesman+'</td>'
+      +'<td>'+esc(r.customer)+'</td>'
+      +'<td>'+esc(r.vehicle)+'</td>'
+      +'<td class="center">'+r.category+'</td>'
+      +'<td>'+esc(r.city)+'</td>'
+      +'<td>'+esc(r.paymentCase)+'</td>'
+      +'<td>'+esc(r.bank)+'</td>'
+      +'<td>'+esc(r.chequeNo)+'</td>'
+      +'<td>'+esc(r.refundChequeNo||'-')+'</td>'
+      +'<td>'+(r.confirmedDate||'-')+'</td>'
+      +'<td style="color:var(--grn);font-weight:700">PKR '+N(r.bookingPaid)+'</td>'
+      +'<td style="color:var(--gold);font-weight:700">PKR '+N(r.balancePaid)+'</td>'
+      +'<td style="color:var(--red);font-weight:700">PKR '+N(r.refund)+'</td>'
+      +'<td style="font-weight:800">PKR '+N(r.net)+'</td>'
+      +'<td style="color:var(--red);font-weight:800">PKR '+N(r.remaining)+'</td>'
+      +'<td><span class="badge '+statusClass(r.status)+'">'+r.status+'</span></td>'
+      +'</tr>';
+  }).join('');
+  return '<div class="topbar"><div class="page-title">Professional <span>Ledger</span></div></div>'
+    +'<div class="chart-box" style="margin-bottom:16px"><div class="filter-bar" style="margin-bottom:10px"><span style="font-size:12px;font-weight:700;color:var(--ink)">Salesman:</span><select id="ledger-salesman-filter" onchange="setLedgerSalesmanFilter()">'+reportSalesmanOptionsHtml(curLedgerSm)+'</select></div><div class="chart-title">Ledger Summary</div><div class="chart-sub">Cancelled bookings remaining me include nahi hongi. Active balance due sirf live customer cases ka show hoga.</div>'
+    +'<div class="kpi-row" style="margin:0">'
+    +'<div class="kpi grn"><div class="kpi-lbl">Booking Paid</div><div class="kpi-val" style="font-size:18px">'+N(totalBooking)+'</div></div>'
+    +'<div class="kpi gold"><div class="kpi-lbl">Balance Paid</div><div class="kpi-val" style="font-size:18px">'+N(totalBalance)+'</div></div>'
+    +'<div class="kpi red"><div class="kpi-lbl">Refund</div><div class="kpi-val" style="font-size:18px">'+N(totalRefund)+'</div></div>'
+    +'<div class="kpi"><div class="kpi-lbl">Net Collected</div><div class="kpi-val" style="font-size:18px;color:var(--ink)">'+N(totalNet)+'</div></div>'
+    +'<div class="kpi red"><div class="kpi-lbl">Active Balance Due</div><div class="kpi-val" style="font-size:18px">'+N(totalRemaining)+'</div><div class="kpi-sub">'+totalCancelled+' cancelled / refunded</div></div>'
+    +'</div></div>'
+    +'<div class="tbl-box"><div class="tbl-head"><h3>Complete Booking Ledger</h3></div><div class="tbl-wrap scrollbar-thin"><table class="booking-grid"><thead><tr><th>Code</th><th>Salesman</th><th>Customer</th><th>Vehicle</th><th class="center">Cat</th><th>City</th><th>Case</th><th>Bank</th><th>Cheque #</th><th>Refund Cheque #</th><th>Confirmed Date</th><th>Booking Paid</th><th>Balance Paid</th><th>Refund</th><th>Net Collected</th><th>Active Due</th><th>Status</th></tr></thead><tbody>'
+    +(body || '<tr><td colspan="17" style="padding:24px;text-align:center;color:var(--ink3)">Abhi koi ledger entry nahi.</td></tr>')
+    +'</tbody><tfoot><tr style="background:var(--ink);color:#fff"><td colspan="11" style="padding:9px 12px;font-weight:700">TOTALS</td><td style="padding:9px 12px;font-weight:700;color:#A5D6A7">PKR '+N(totalBooking)+'</td><td style="padding:9px 12px;font-weight:700;color:#FCD34D">PKR '+N(totalBalance)+'</td><td style="padding:9px 12px;font-weight:700;color:#FCA5A5">PKR '+N(totalRefund)+'</td><td style="padding:9px 12px;font-weight:700">PKR '+N(totalNet)+'</td><td style="padding:9px 12px;font-weight:700;color:#FCA5A5">PKR '+N(totalRemaining)+'</td><td style="padding:9px 12px;font-weight:700">'+totalCancelled+' cancelled</td></tr></tfoot></table></div></div>';
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHART BUILDER
+// ═══════════════════════════════════════════════════════════
+function buildCharts(){
+  var dt=document.getElementById('dt-chip');
+  if(dt)dt.textContent=new Date().toLocaleDateString('en-PK',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+
+  var smNames=S.salesmen.map(function(s){return s.name.replace('MR.','').replace('MISS.','').split(' ')[0];});
+  var smColors=S.salesmen.map(function(s){return s.color;});
+
+  // Dashboard charts
+  var cb=document.getElementById('ch-bar');
+  if(cb){
+    var t1Vals=S.salesmen.map(function(sm){return smBks(sm.prefix).filter(function(b){return carCategoryFromBooking(b)==='T1'&&(b.name||b.token);}).length;});
+    var t2Vals=S.salesmen.map(function(sm){return smBks(sm.prefix).filter(function(b){return carCategoryFromBooking(b)==='T2'&&(b.name||b.token);}).length;});
+    charts['bar']=new Chart(cb,{type:'bar',data:{labels:smNames,datasets:[
+      {label:'T1',data:t1Vals,backgroundColor:'rgba(123,47,190,.75)',borderRadius:5},
+      {label:'T2',data:t2Vals,backgroundColor:'rgba(3,105,161,.75)',borderRadius:5}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.04)'}}}}});
+  }
+  var cd=document.getElementById('ch-donut');
+  if(cd){
+    var allb=allBks();
+    var totTok=allb.reduce(function(s,b){return s+(parseFloat(b.token)||0);},0);
+    var totBal=allb.reduce(function(s,b){return s+(parseFloat(b.balance)||0);},0);
+    var pendingBase=S.salesmen.reduce(function(s,sm){return s+getTarget(sm,'T1')+getTarget(sm,'T2');},0);
+    var pending=Math.max(0,(pendingBase*500000)-totTok-totBal);
+    charts['donut']=new Chart(cd,{type:'doughnut',data:{labels:['Token Received','Balance Received','Pending'],datasets:[{data:[totTok,totBal,pending||100],backgroundColor:['#059669','#D97706','#E2E8F0'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right'}},cutout:'65%'}});
+  }
+  var ct1=document.getElementById('ch-tgt1');
+  if(ct1){
+    var t1a=S.salesmen.map(function(sm){return smBks(sm.prefix).filter(function(b){return carCategoryFromBooking(b)==='T1'&&(b.name||b.token);}).length;});
+    charts['tgt1']=new Chart(ct1,{type:'bar',data:{labels:smNames,datasets:[
+      {label:'T1 Achieved',data:t1a,backgroundColor:'rgba(123,47,190,.7)',borderRadius:4},
+      {label:'Target',data:S.salesmen.map(function(sm){return getTarget(sm,'T1');}),backgroundColor:'rgba(123,47,190,.15)',borderRadius:4}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true}}}});
+  }
+  var ct2=document.getElementById('ch-tgt2');
+  if(ct2){
+    var t2a=S.salesmen.map(function(sm){return smBks(sm.prefix).filter(function(b){return carCategoryFromBooking(b)==='T2'&&(b.name||b.token);}).length;});
+    charts['tgt2']=new Chart(ct2,{type:'bar',data:{labels:smNames,datasets:[
+      {label:'T2 Achieved',data:t2a,backgroundColor:'rgba(3,105,161,.7)',borderRadius:4},
+      {label:'Target',data:S.salesmen.map(function(sm){return getTarget(sm,'T2');}),backgroundColor:'rgba(3,105,161,.15)',borderRadius:4}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true}}}});
+  }
+
+  // Daywise
+  var ctr=document.getElementById('ch-trend');
+  if(ctr){
+    var filteredLogs=S.dailyLog.filter(function(l){ return dayInRange(l.date); });
+    var dayKeys=Array.from(new Set(filteredLogs.map(function(l){return l.date;}))).sort().slice(-7);
+    var trendData=dayKeys.map(function(d){return filteredLogs.filter(function(l){return l.date===d;}).length;});
+    var trendLabels=dayKeys.map(function(d){return new Date(d+'T00:00:00').toLocaleDateString('en-PK',{weekday:'short',day:'numeric'});});
+    charts['trend']=new Chart(ctr,{type:'line',data:{labels:trendLabels,datasets:[{label:'Bookings',data:trendData,borderColor:'#0369A1',backgroundColor:'rgba(3,105,161,.08)',fill:true,tension:.4,pointBackgroundColor:'#0369A1',pointRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.04)'}}}}});
+  }
+  var ctd=document.getElementById('ch-today');
+  if(ctd){
+    var todayLogs=S.dailyLog.filter(function(l){ return dayInRange(l.date); });
+    var smTodayCounts=S.salesmen.map(function(sm){return todayLogs.filter(function(l){return l.prefix===sm.prefix;}).length;});
+    charts['today']=new Chart(ctd,{type:'polarArea',data:{labels:smNames,datasets:[{data:smTodayCounts.map(function(v){return v||0.01;}),backgroundColor:smColors.map(function(c){return c+'99';}),borderWidth:1,borderColor:smColors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10}}}}}});
+  }
+
+  // Monthly
+  var cm=document.getElementById('ch-monthly');
+  if(cm){
+    var byMonth={};
+    S.dailyLog.forEach(function(l){var m=l.date.slice(0,7);if(!byMonth[m])byMonth[m]={t1:0,t2:0};if(l.category==='T1')byMonth[m].t1++;else if(l.category==='T2')byMonth[m].t2++;});
+    var mKeys=Object.keys(byMonth).sort().slice(-6);
+    var mLabels=mKeys.map(function(m){return new Date(m+'-01').toLocaleDateString('en-PK',{month:'short',year:'2-digit'});});
+    charts['monthly']=new Chart(cm,{type:'bar',data:{labels:mLabels.length?mLabels:['No data'],datasets:[
+      {label:'T1',data:mKeys.map(function(m){return byMonth[m].t1;}),backgroundColor:'rgba(123,47,190,.7)',borderRadius:5},
+      {label:'T2',data:mKeys.map(function(m){return byMonth[m].t2;}),backgroundColor:'rgba(3,105,161,.7)',borderRadius:5}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{x:{grid:{display:false}},y:{beginAtZero:true}}}});
+  }
+
+  // Targets radar
+  var cr=document.getElementById('ch-radar');
+  if(cr){
+    var rT1=S.salesmen.map(function(sm){return smBks(sm.prefix).filter(function(b){return carCategoryFromBooking(b)==='T1'&&(b.name||b.token);}).length;});
+    var rT2=S.salesmen.map(function(sm){return smBks(sm.prefix).filter(function(b){return carCategoryFromBooking(b)==='T2'&&(b.name||b.token);}).length;});
+    charts['radar']=new Chart(cr,{type:'radar',data:{labels:smNames,datasets:[
+      {label:'T1 Achieved',data:rT1,borderColor:'#7B2FBE',backgroundColor:'rgba(123,47,190,.15)',pointBackgroundColor:'#7B2FBE'},
+      {label:'T2 Achieved',data:rT2,borderColor:'#0369A1',backgroundColor:'rgba(3,105,161,.15)',pointBackgroundColor:'#0369A1'}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{r:{beginAtZero:true,grid:{color:'rgba(0,0,0,.06)'}}}}});
+  }
+
+  // Salesman charts
+  var css=document.getElementById('ch-sm-status');
+  if(css&&curSm){
+    var bks=smBks(curSm);
+    var pend=bks.filter(function(b){return !b.name;}).length;
+    var tokOnly=bks.filter(function(b){return b.name&&!parseFloat(b.balance);}).length;
+    var comp=bks.filter(function(b){return b.name&&parseFloat(b.balance)>0;}).length;
+    charts['smStatus']=new Chart(css,{type:'doughnut',data:{labels:['Pending','Token Only','Complete'],datasets:[{data:[pend,tokOnly,comp],backgroundColor:['#FED7AA','#A7F3D0','#BFDBFE'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right'}},cutout:'60%'}});
+  }
+  var csp=document.getElementById('ch-sm-pay');
+  if(csp&&curSm){
+    var bks2=smBks(curSm);
+    var smTok2=bks2.reduce(function(s,b){return s+(parseFloat(b.token)||0);},0);
+    var smBal2=bks2.reduce(function(s,b){return s+(parseFloat(b.balance)||0);},0);
+    charts['smPay']=new Chart(csp,{type:'bar',data:{labels:['Token','Balance','Total'],datasets:[{data:[smTok2,smBal2,smTok2+smBal2],backgroundColor:['rgba(5,150,105,.7)','rgba(217,119,6,.7)','rgba(13,27,42,.7)'],borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════════════════════════════
+function toggleRefundCheque(prefix,idx,value){
+  var box=document.getElementById('refund-wrap-'+prefix+'-'+idx);
+  if(!box) return;
+  var show=(parseFloat(value)||0)>0;
+  box.style.display=show?'block':'none';
+  if(!show){
+    try{
+      var input=box.querySelector('input');
+      if(input) input.value='';
+    }catch(e){}
+    try{
+      if(S && S.bookings && S.bookings[prefix] && S.bookings[prefix][idx]) S.bookings[prefix][idx].refundChequeNo='';
+    }catch(e){}
+    save();
+  }
+}
+
+function upd(prefix,idx,field,value){
+  applyFieldUpdate(prefix,idx,field,value,{save:true,render:false,log:true});
+}
+function logEntry(prefix,idx){
+  var sm=S.salesmen.find(function(s){return s.prefix===prefix;});
+  var b=S.bookings[prefix][idx];
+  if(!sm||!b.name)return;
+  b.logDate=b.logDate||today();
+  rebuildDailyLog();
+}
+function applyFieldUpdate(prefix,idx,field,value,opts){
+  opts=opts||{};
+  var b=S.bookings[prefix][idx];
+  if(!b) return;
+  b[field]=value;
+  if(field==='carId'){
+    var car=getCar(value);
+    b.model=car?car.category:'';
+    b.vehiclePrice=car?String(car.price):'';
+    b.bookingAmount=car?String(car.bookingAmount):'';
+  }
+  if(field==='paymentCase'){
+    if(value==='Bank Case'){
+      b.paymentCase='Bank Case';
+      b.bankName=(b.bankName && String(b.bankName).trim())?b.bankName:(S.banks[0]||'');
+    }else{
+      b.paymentCase='Walk-in Customer';
+      b.bankName='';
+      b.chequeNo='';
+    }
+  }
+  if(field==='bankName'){
+    if(value && String(value).trim()){
+      b.bankName=value;
+      b.paymentCase='Bank Case';
+    }else{
+      b.bankName='';
+      b.paymentCase='Walk-in Customer';
+    }
+  }
+  if(field==='confirmedDate' && activeRemainingAmount(b)>0){
+    b.confirmedDate='';
+  }
+  if((field==='name'&&String(value).trim())||(field==='token'&&parseFloat(value)>0)||(field==='balance'&&parseFloat(value)>0)||(field==='refund'&&parseFloat(value)>0)||(field==='carId'&&value)||(field==='chequeNo'&&String(value).trim())||(field==='refundChequeNo'&&String(value).trim())||(field==='caseDate'&&String(value).trim())||(field==='confirmedDate'&&String(value).trim())){
+    b.logDate=today();
+    if(opts.log!==false) logEntry(prefix,idx);
+  }
+  if(opts.save!==false) save();
+}
+function parseUpdBinding(text){
+  if(!text) return null;
+  var m=String(text).match(/upd\('([^']+)',(\d+),'([^']+)',this\.value\)/);
+  if(!m) return null;
+  return {prefix:m[1], idx:parseInt(m[2],10), field:m[3]};
+}
+function persistActiveField(){
+  try{
+    var el=document.activeElement;
+    if(!el) return;
+    var binding=parseUpdBinding(el.getAttribute('onchange')) || parseUpdBinding(el.getAttribute('oninput'));
+    if(!binding) return;
+    applyFieldUpdate(binding.prefix, binding.idx, binding.field, el.value, {save:true, render:false, log:true});
+  }catch(e){}
+}
+function focusNextField(current){
+  try{
+    var cells = Array.prototype.slice.call(document.querySelectorAll('.booking-grid input, .booking-grid select, .booking-grid button'));
+    var enabled = cells.filter(function(el){
+      return !el.disabled && el.offsetParent !== null;
+    });
+    var idx = enabled.indexOf(current);
+    if(idx===-1 || idx>=enabled.length-1) return;
+    enabled[idx+1].focus();
+    if(typeof enabled[idx+1].select==='function' && (enabled[idx+1].tagName==='INPUT')) enabled[idx+1].select();
+  }catch(e){}
+}
+function setFilter(f){curFilter=f;render();}
+function setDayFilter(){ curDayFrom=(document.getElementById('day-from')||{}).value||''; curDayTo=(document.getElementById('day-to')||{}).value||''; render(); }
+function clearDayFilter(){ curDayFrom=''; curDayTo=''; curDaySm='ALL'; render(); }
+function setDaySalesmanFilter(){ curDaySm=(document.getElementById('day-salesman-filter')||{}).value||'ALL'; render(); }
+function setMonthFilter(){ curMonthFilter=(document.getElementById('month-filter')||{}).value||''; render(); }
+function clearMonthFilter(){ curMonthFilter=''; curMonthSm='ALL'; render(); }
+function setMonthSalesmanFilter(){ curMonthSm=(document.getElementById('month-salesman-filter')||{}).value||'ALL'; render(); }
+function setLedgerSalesmanFilter(){ curLedgerSm=(document.getElementById('ledger-salesman-filter')||{}).value||'ALL'; render(); }
+function setSmTargets(prefix){
+  var sm=S.salesmen.find(function(s){return s.prefix===prefix;});
+  if(!sm)return;
+  var t1=parseInt(document.getElementById('tgt-t1-'+prefix).value);
+  var t2=parseInt(document.getElementById('tgt-t2-'+prefix).value);
+  sm.targetT1=isNaN(t1)?0:Math.max(0,t1);
+  sm.targetT2=isNaN(t2)?0:Math.max(0,t2);
+  save();render();
+}
+function saveCarPricing(carId){
+  var car=getCar(carId);
+  if(!car) return;
+  car.price=parseFloat((document.getElementById('car-price-'+carId)||{}).value)||0;
+  car.bookingAmount=parseFloat((document.getElementById('car-booking-'+carId)||{}).value)||0;
+  Object.keys(S.bookings).forEach(function(prefix){
+    (S.bookings[prefix]||[]).forEach(function(b){
+      if((b.carId||b.model)===carId){
+        b.vehiclePrice=String(car.price||0);
+        b.bookingAmount=String(car.bookingAmount||0);
+        if(!b.model) b.model=car.category;
+      }
+    });
+  });
+  save();render();
+}
+function addCodes(prefix){
+  var sm=S.salesmen.find(function(s){return s.prefix===prefix;});
+  var cur=S.bookings[prefix];
+  for(var i=0;i<5;i++) cur.push(blankBooking(prefix,101+cur.length));
+  save();render();
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openCloudSettings(){
+  var cfg=getCloudConfig();
+  document.getElementById('cloud-url').value=cfg.url||'';
+  document.getElementById('cloud-secret').value=cfg.secret||'';
+  openModal('modal-cloud');
+}
+function saveCloudConfig(){
+  var payload={url:(document.getElementById('cloud-url').value||'').trim(),secret:(document.getElementById('cloud-secret').value||'').trim(),autoSync:true};
+  localStorage.setItem('jt_cloud_config', JSON.stringify(payload));
+  setCloudStatus('warn', payload.url && payload.secret ? 'Settings saved, sync ready' : 'Cloud setup required');
+  closeModal('modal-cloud');
+  render();
+}
+async function testCloudConnection(){
+  saveCloudConfig();
+  var ok=await loadCloudState();
+  alert(ok ? 'Cloud connection theek hai.' : 'Cloud load nahi hua. URL ya secret dobara check karein.');
+  buildSideNav();
+  render();
+}
+async function manualReloadCloud(){
+  if(!syncEnabled()){ alert('Pehle Cloud Settings me URL aur secret save karein.'); return; }
+  await loadCloudState();
+  buildSideNav();
+  render();
+}
+async function manualSyncNow(){
+  if(!syncEnabled()){ alert('Pehle Cloud Settings me URL aur secret save karein.'); return; }
+  await syncStateToCloud('manual');
+  render();
+}
+function resetAppData(){
+  try{
+    localStorage.removeItem('jt_final');
+  }catch(e){}
+  try{
+    S={
+      targetT1:15,
+      targetT2:15,
+      salesmen: JSON.parse(JSON.stringify(DEFAULT_SALESMEN)),
+      cars: DEFAULT_CARS.slice(),
+      banks: DEFAULT_BANKS.slice(),
+      cities: DEFAULT_CITIES.slice(),
+      bookings:{},
+      dailyLog:[]
+    };
+    initB();
+    saveLocalOnly();
+    buildSideNav();
+    goTo('dashboard');
+  }catch(err){
+    alert('Reset complete nahi hua. File ko close karke dubara open karein.');
+  }
+}
+function confirmAdd(){
+  var name=document.getElementById('mp-name').value.trim().toUpperCase();
+  var prefix=document.getElementById('mp-pfx').value.trim().toUpperCase();
+  var codes=parseInt(document.getElementById('mp-codes').value)||22;
+  if(!name||!prefix){alert('Naam aur prefix zaroori hai!');return;}
+  if(S.salesmen.find(function(s){return s.prefix===prefix;})){alert('Prefix already exist karta hai!');return;}
+  var colors=['#7B2FBE','#0369A1','#059669','#D97706','#DC2626','#0891B2','#7C3AED','#B45309'];
+  S.salesmen.push({name:name,prefix:prefix,color:colors[S.salesmen.length%colors.length],targetT1:parseInt(S.targetT1)||15,targetT2:parseInt(S.targetT2)||15});
+  var arr=[];for(var i=0;i<codes;i++) arr.push(blankBooking(prefix,101+i));
+  S.bookings[prefix]=arr;
+  closeModal('modal-add');
+  buildSideNav();curSm=prefix;curPage='salesman';
+  save();render();
+  document.getElementById('mp-name').value='';document.getElementById('mp-pfx').value='';document.getElementById('mp-codes').value='22';
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// PRINT RECEIPT
+// ═══════════════════════════════════════════════════════════
+function printR(prefix,idx){
+  var sm=S.salesmen.find(function(s){return s.prefix===prefix;});
+  var b=S.bookings[prefix][idx];
+  var booking=bookingReceived(b), extra=balanceReceived(b), total=totalPaid(b), refund=refundedAmount(b), net=netCollected(b);
+  var vehicle=carNameFromBooking(b)||'JETOUR VEHICLE';
+  var category=carCategoryFromBooking(b)||'T1/T2';
+  var mc=category==='T1'?'#7B2FBE':'#0369A1';
+  var carP=getCarPrice(b), req=getBookingAmount(b), rem=remainingAmount(b), status=accountingStatus(b);
+  var isFullRefund=isCancelledBooking(b) || (refund>0 && net<=0);
+  var sc=isFullRefund?'#DC2626':((status==='FULLY PAID'||status==='CONFIRMED')?'#059669':(status==='PENDING'?'#94A3B8':'#D97706'));
+  var now=new Date().toLocaleString('en-PK');
+  var dStr=b.caseDate?new Date(b.caseDate+'T00:00:00').toLocaleDateString('en-PK',{day:'numeric',month:'long',year:'numeric'}):'-';
+  var rNo='JT-'+category+'-'+b.code+'-'+Date.now().toString().slice(-5);
+  var qr=qrUrl(qrText(b,sm.name),110);
+  var title=isFullRefund?'Professional Refund Receipt':'Professional Booking, Payment & Accounting Receipt';
+  var tag=isFullRefund?'FULL REFUND CASE':vehicle+' ('+category+')';
+  var paymentPanel=isFullRefund
+    ? '<div class="rpay"><div class="rpay-row"><div class="rpay-item"><div class="rpl">Original Amount Received</div><div class="rpv" style="color:#FCD34D">PKR '+total.toLocaleString()+'</div></div><div class="rpay-item" style="border-left:1px solid rgba(255,255,255,.15);border-right:1px solid rgba(255,255,255,.15)"><div class="rpl">Refunded Amount</div><div class="rpv" style="color:#FCA5A5">PKR '+refund.toLocaleString()+'</div></div><div class="rpay-item"><div class="rpl">Net Outstanding Record</div><div class="rpv">PKR 0</div></div></div></div>'
+    : '<div class="rpay"><div class="rpay-row"><div class="rpay-item"><div class="rpl">Booking Amount Paid</div><div class="rpv" style="color:#FCD34D">PKR '+booking.toLocaleString()+'</div></div><div class="rpay-item" style="border-left:1px solid rgba(255,255,255,.15);border-right:1px solid rgba(255,255,255,.15)"><div class="rpl">Balance Amount Paid</div><div class="rpv" style="color:#6EE7B7">PKR '+extra.toLocaleString()+'</div></div><div class="rpay-item"><div class="rpl">Net Received</div><div class="rpv">PKR '+net.toLocaleString()+'</div></div></div></div>';
+  var duePanel=isFullRefund
+    ? '<div class="rrem"><div><div style="font-size:9px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Refund Status</div><div style="font-size:26px;font-weight:900;color:#DC2626">FULLY REFUNDED</div><div style="font-size:9px;color:#9CA3AF;margin-top:2px">Customer ledger close ho gaya hai. Is case par koi active balance due nahi.</div></div><div style="text-align:right"><div style="font-size:9px;color:#9CA3AF">Refund Cheque / Ref #</div><div style="font-size:15px;font-weight:800;color:#0D1B2A">'+(b.refundChequeNo||'-')+'</div><div style="font-size:9px;color:#9CA3AF">Original Cheque / Ref #: '+(b.chequeNo||'-')+'</div></div></div>'
+    : '<div class="rrem"><div><div style="font-size:9px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Active Balance Due</div><div style="font-size:26px;font-weight:900;color:'+(rem>0?'#DC2626':'#059669')+'">PKR '+rem.toLocaleString()+'</div><div style="font-size:9px;color:#9CA3AF;margin-top:2px">Remaining after booking + balance payments received</div></div><div style="text-align:right"><div style="font-size:9px;color:#9CA3AF">Vehicle Price</div><div style="font-size:15px;font-weight:800;color:#0D1B2A">PKR '+carP.toLocaleString()+'</div><div style="font-size:9px;color:#9CA3AF">Defined Booking: PKR '+req.toLocaleString()+'</div></div></div>';
+  var refundInfo=isFullRefund
+    ? '<br><strong>Refund:</strong> PKR '+refund.toLocaleString()+' | <strong>Refund Cheque #:</strong> '+(b.refundChequeNo||'-')+'<br><strong>Net Received:</strong> PKR 0 | <strong>Active Due:</strong> PKR 0'
+    : '<br><strong>Refund:</strong> PKR '+refund.toLocaleString()+' | <strong>Refund Cheque #:</strong> '+(b.refundChequeNo||'-')+'<br><strong>Net Received:</strong> PKR '+net.toLocaleString()+' | <strong>Active Due:</strong> PKR '+rem.toLocaleString();
+  document.getElementById('print-area').innerHTML='<div class="receipt">'
+    +'<div class="rh"><h2>JETOUR MULTAN</h2><div class="rsub">'+title+' | Authorized Dealer | Multan, Pakistan</div><span class="rtag" style="background:'+(isFullRefund?'#DC2626':mc)+'">'+tag+'</span><div class="rmeta"><span>Receipt: <strong>'+rNo+'</strong></span><span>'+now+'</span></div></div>'
+    +'<div class="rinfo">'
+    +'<div class="ri"><div class="rl">Booking Code</div><div class="rv big">'+b.code+'</div></div>'
+    +'<div class="ri" style="text-align:right"><div class="rl">Status</div><span style="display:inline-block;margin-top:4px;background:'+sc+'22;color:'+sc+';border:1px solid '+sc+';padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700">'+status+'</span></div>'
+    +'<div class="ri"><div class="rl">Customer Name</div><div class="rv">'+(b.name||'-')+'</div></div>'
+    +'<div class="ri"><div class="rl">Cell Number</div><div class="rv">'+(b.cell||'-')+'</div></div>'
+    +'<div class="ri"><div class="rl">City</div><div class="rv">'+(b.city||'—')+'</div></div>'
+    +'<div class="ri"><div class="rl">Case Date</div><div class="rv">'+dStr+'</div></div>'
+    +'<div class="ri"><div class="rl">Case Type</div><div class="rv">'+paymentModeLabel(b)+'</div></div>'
+    +'<div class="ri"><div class="rl">Bank</div><div class="rv">'+bankLabel(b)+'</div></div>'
+    +'<div class="ri"><div class="rl">Original Cheque / Ref #</div><div class="rv">'+(b.chequeNo||'-')+'</div></div>'
+    +'<div class="ri"><div class="rl">Refund Cheque / Ref #</div><div class="rv">'+(b.refundChequeNo||'-')+'</div></div>'
+    +'<div class="ri full"><div class="rl">Sales Representative</div><div class="rv">'+sm.name+' | JETOUR MULTAN</div></div>'
+    +'<div class="ri full"><div class="rl">Vehicle</div><div class="rv" style="color:'+mc+';font-size:16px">'+vehicle+' | Category: '+category+'</div></div>'
+    +'</div>'
+    + paymentPanel
+    + duePanel
+    +'<div class="rqr"><img src="'+qr+'" id="rqri" alt="QR"><div><div style="font-size:12px;font-weight:700;color:#0D1B2A;margin-bottom:5px">Booking Verification QR Code</div><div style="font-size:10px;color:#555;line-height:1.7">Scan karein apni booking verify karne ke liye.<br><strong>Code:</strong> '+b.code+' | <strong>Vehicle:</strong> '+vehicle+'<br><strong>Booking Paid:</strong> PKR '+booking.toLocaleString()+' | <strong>Balance Paid:</strong> PKR '+extra.toLocaleString()+ refundInfo +'<br><strong>Bank:</strong> '+bankLabel(b)+' | <strong>Cheque #:</strong> '+(b.chequeNo||'-')+'</div></div></div>'
+    +'<div class="rfoot"><div>JETOUR MULTAN — '+(isFullRefund?'Professional Refund Receipt':'Professional Booking & Payment Receipt')+'</div><div style="margin-top:3px">Yeh receipt accounting record ke liye generate ki gayi hai.</div><div class="rstamp">'+status+'</div><div style="margin-top:6px;font-size:8px;color:#d1d5db">Computer generated | '+rNo+'</div></div></div>';
+  document.getElementById('print-area').style.display='block';
+  var img=document.getElementById('rqri');
+  var printed=false;
+  var doPrint=function(){ if(printed) return; printed=true; window.print(); setTimeout(function(){document.getElementById('print-area').style.display='none';},2500); };
+  if(img){img.onload=function(){setTimeout(doPrint,400);};setTimeout(function(){if(img.complete)doPrint();},800);} else setTimeout(doPrint,600);
+}
+
+window.addEventListener('beforeunload', function(){
+  persistActiveField();
+  saveLocalOnly();
+  flushSyncBeacon();
+});
+document.addEventListener('keydown', function(e){
+  if(e.key!=='Enter') return;
+  var el=e.target;
+  if(!el) return;
+  var tag=(el.tagName||'').toUpperCase();
+  if(tag!=='INPUT' && tag!=='SELECT') return;
+  if(!el.closest('.booking-grid')) return;
+  e.preventDefault();
+  try{ el.blur(); }catch(err){}
+  setTimeout(function(){ focusNextField(el); }, 20);
+});
+
+loadS();
+</script>
+</body>
+</html>
